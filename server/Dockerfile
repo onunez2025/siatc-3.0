@@ -3,6 +3,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Cache bust - update this date to force rebuild: 2026-02-11-v2
+ARG CACHEBUST=1
+
 # Copiar archivos de dependencias
 COPY package*.json ./
 

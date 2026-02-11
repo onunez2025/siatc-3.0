@@ -9,20 +9,19 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 3001;
 
-// CORS configuration - permitir frontend de EasyPanel
-const corsOptions = {
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:4200',
-        'https://gac-sole-siatc3frontend.ekmz7d.easypanel.host',
-        /\.easypanel\.host$/
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-};
+// CORS - Permitir todos los orígenes para simplificar (producción)
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
-app.use(cors(corsOptions));
 app.use(express.json());
 
 // Rota de prueba básica

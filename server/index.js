@@ -7,9 +7,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
-app.use(cors());
+// CORS configuration - permitir frontend de EasyPanel
+const corsOptions = {
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:4200',
+        'https://gac-sole-siatc3frontend.ekmz7d.easypanel.host',
+        /\.easypanel\.host$/
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Rota de prueba básica

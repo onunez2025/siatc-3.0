@@ -1,0 +1,72 @@
+[
+  {
+    "COLUMN_NAME": "ID_Cancelados",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": 50
+  },
+  {
+    "COLUMN_NAME": "Ticket",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": 50
+  },
+  {
+    "COLUMN_NAME": "Motivo_Cancelacion",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Autorizador_Cancelacion",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Generado_el",
+    "DATA_TYPE": "datetime",
+    "CHARACTER_MAXIMUM_LENGTH": null
+  },
+  {
+    "COLUMN_NAME": "Gestionado_por",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Cancelacion_Correcta",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": 50
+  },
+  {
+    "COLUMN_NAME": "Motivo_Correcto",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Gestionado",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": 50
+  },
+  {
+    "COLUMN_NAME": "Observacion_Gestionado",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Gestionado_el",
+    "DATA_TYPE": "datetime",
+    "CHARACTER_MAXIMUM_LENGTH": null
+  },
+  {
+    "COLUMN_NAME": "Asignado_a",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Asignado_por",
+    "DATA_TYPE": "varchar",
+    "CHARACTER_MAXIMUM_LENGTH": -1
+  },
+  {
+    "COLUMN_NAME": "Asignado_el",
+    "DATA_TYPE": "datetime",
+    "CHARACTER_MAXIMUM_LENGTH": null
+  }
+]

@@ -1,0 +1,406 @@
+{
+  "schema": [
+    {
+      "COLUMN_NAME": "Ticket",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "LlamadaFSM",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "Asunto",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Estado",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 25
+    },
+    {
+      "COLUMN_NAME": "FechaVisita",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "CheckOut",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "FechaUltimaModificacion",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "IdServicio",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "IdCliente",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "CodigoExternoCliente",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "NombreCliente",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "Email",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 100
+    },
+    {
+      "COLUMN_NAME": "Celular1",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Celular2",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Telefono1",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Calle",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "NumeroCalle",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Distrito",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 100
+    },
+    {
+      "COLUMN_NAME": "Ciudad",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 100
+    },
+    {
+      "COLUMN_NAME": "Pais",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 100
+    },
+    {
+      "COLUMN_NAME": "CodigoPostal",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Latitud",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Longitud",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "Referencia",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": -1
+    },
+    {
+      "COLUMN_NAME": "IdEquipo",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "CodigoExternoEquipo",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "NombreEquipo",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "ComentarioProgramador",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": -1
+    },
+    {
+      "COLUMN_NAME": "IDEmpresa",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "CodigoTecnico",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "NombreTecnico",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "ApellidoTecnico",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "VisitaRealizada",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "TrabajoRealizado",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "SolicitaNuevaVisita",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "MotivoNuevaVisita",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 255
+    },
+    {
+      "COLUMN_NAME": "CodMotivoIncidente",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 10
+    },
+    {
+      "COLUMN_NAME": "FechaModificacionIT",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": 20
+    },
+    {
+      "COLUMN_NAME": "ComentarioTecnico",
+      "DATA_TYPE": "nvarchar",
+      "CHARACTER_MAXIMUM_LENGTH": -1
+    }
+  ],
+  "data": [
+    {
+      "Ticket": "100",
+      "LlamadaFSM": "21",
+      "Asunto": "2023-07-24T10:30:55",
+      "Estado": "Closed",
+      "FechaVisita": "2023-07-25T13:00:00",
+      "CheckOut": "2023-07-25T14:50:00",
+      "FechaUltimaModificacion": "2026-01-27T01:06:11",
+      "IdServicio": "CA_1",
+      "IdCliente": "1018861",
+      "CodigoExternoCliente": "10614244",
+      "NombreCliente": "ARTURO ANDRES  DELGADOBERNAL",
+      "Email": "ARTURODELGADOB@HOTMAIL.COM",
+      "Celular1": "+51 997212114",
+      "Celular2": "null",
+      "Telefono1": "null",
+      "Calle": "JIRON ALDEBARAN, SANTIAGO DE SURCO",
+      "NumeroCalle": "570",
+      "Distrito": "SANTIAGO DE SURCO",
+      "Ciudad": "LIMA",
+      "Pais": "PE",
+      "CodigoPostal": "150140",
+      "Latitud": "-12.103467",
+      "Longitud": "-76.969743",
+      "Referencia": "ALT DE LA CDR 13 DE AV LA ENCALADA.",
+      "IdEquipo": "23",
+      "CodigoExternoEquipo": "3121SOLTEMS050V",
+      "NombreEquipo": "TERMA SOLE WIFI 50L C/ACCESORIOS",
+      "ComentarioProgramador": "inst/dar rango horario",
+      "IDEmpresa": "1301",
+      "CodigoTecnico": "3838",
+      "NombreTecnico": "CESAR AUGUSTO",
+      "ApellidoTecnico": "ATIRO",
+      "VisitaRealizada": "true",
+      "TrabajoRealizado": "true",
+      "SolicitaNuevaVisita": "true",
+      "MotivoNuevaVisita": "null",
+      "CodMotivoIncidente": "null",
+      "FechaModificacionIT": "2023-07-25T19:08:03",
+      "ComentarioTecnico": "Instalación pendiente ya que se necesita traer accesorios, traer 2 reductores bushing de 3/4x1/2 bajó venta, se deja terma con accesorios completos "
+    },
+    {
+      "Ticket": "1000",
+      "LlamadaFSM": "599",
+      "Asunto": "2023-08-03T16:49:18",
+      "Estado": "Closed",
+      "FechaVisita": "2023-08-05T13:00:00",
+      "CheckOut": "2023-08-05T14:52:00",
+      "FechaUltimaModificacion": "2026-01-27T01:07:29",
+      "IdServicio": "CA_1",
+      "IdCliente": "1019034",
+      "CodigoExternoCliente": "08799502",
+      "NombreCliente": "ROSA NAVIHA  GALVEZ SUCCAR DE HAITO",
+      "Email": "rochihaito@hotmail.com",
+      "Celular1": "+51 951694046",
+      "Celular2": "null",
+      "Telefono1": "null",
+      "Calle": "Av Primavera, SANTIAGO DE SURCO",
+      "NumeroCalle": "2004",
+      "Distrito": "SANTIAGO DE SURCO",
+      "Ciudad": "LIMA",
+      "Pais": "PE",
+      "CodigoPostal": "150140",
+      "Latitud": "-12.111437",
+      "Longitud": "-76.968061",
+      "Referencia": "Cdra 20 de Av. Primavera",
+      "IdEquipo": "442",
+      "CodigoExternoEquipo": "3121SOLEGASNE05V2C",
+      "NombreEquipo": "CALENTADOR INSTANTANEO GN 5.5L EVOLUCION",
+      "ComentarioProgramador": "Instalación/área acondicionada/desmontar producto antiguo/llamar para indicar rh",
+      "IDEmpresa": "1301",
+      "CodigoTecnico": "1930",
+      "NombreTecnico": "EMITERIO",
+      "ApellidoTecnico": "CALVAY",
+      "VisitaRealizada": "true",
+      "TrabajoRealizado": "true",
+      "SolicitaNuevaVisita": "false",
+      "MotivoNuevaVisita": "null",
+      "CodMotivoIncidente": "null",
+      "FechaModificacionIT": "2023-08-05T19:51:35",
+      "ComentarioTecnico": "* se instaló terma de 5.5 litros a GN.\n* se entregó manual y garantía.\n* se explicó funcionamiento. \n* cliente queda conforme."
+    },
+    {
+      "Ticket": "1000000",
+      "LlamadaFSM": "753208",
+      "Asunto": "2025-11-09T17:54:45",
+      "Estado": "Cancelled",
+      "FechaVisita": "2025-11-11T13:00:00",
+      "CheckOut": "2025-11-11T11:51:00",
+      "FechaUltimaModificacion": "2025-11-11T10:47:55",
+      "IdServicio": "CA_1",
+      "IdCliente": "1184250",
+      "CodigoExternoCliente": "32911531",
+      "NombreCliente": "GERARDO EDGAR  CASTILLO ESTRAVER",
+      "Email": "ctcastilloeirl@hotmail.com",
+      "Celular1": "+51 943228722",
+      "Celular2": "null",
+      "Telefono1": "null",
+      "Calle": "JR PACHACUTEC, LINCE",
+      "NumeroCalle": "224",
+      "Distrito": "LINCE",
+      "Ciudad": "LIMA",
+      "Pais": "PE",
+      "CodigoPostal": "15073",
+      "Latitud": "-12.083509",
+      "Longitud": "-77.045767",
+      "Referencia": "A MEDIA CDRA DE SALAVERRY",
+      "IdEquipo": "476615",
+      "CodigoExternoEquipo": "3120TURE17CO",
+      "NombreEquipo": "CAMPANA SOLE NUEVA ROMA 90CM.2M. INOX.",
+      "ComentarioProgramador": "webpromart/insta",
+      "IDEmpresa": "null",
+      "CodigoTecnico": "null",
+      "NombreTecnico": "null",
+      "ApellidoTecnico": "null",
+      "VisitaRealizada": "false",
+      "TrabajoRealizado": "false",
+      "SolicitaNuevaVisita": "false",
+      "MotivoNuevaVisita": "null",
+      "CodMotivoIncidente": "null",
+      "FechaModificacionIT": "2025-11-09T22:56:54",
+      "ComentarioTecnico": "null"
+    },
+    {
+      "Ticket": "1000001",
+      "LlamadaFSM": "753156",
+      "Asunto": "2025-11-09T16:50:07",
+      "Estado": "Closed",
+      "FechaVisita": "2025-11-11T13:00:00",
+      "CheckOut": "2025-11-12T04:30:00",
+      "FechaUltimaModificacion": "2025-11-12T04:30:57",
+      "IdServicio": "CA_1",
+      "IdCliente": "1273020",
+      "CodigoExternoCliente": "47574353",
+      "NombreCliente": "BENITO  ALBUJAR CUMPA",
+      "Email": "benito_albujar@hotmail.com",
+      "Celular1": "+51 955583138",
+      "Celular2": "null",
+      "Telefono1": "null",
+      "Calle": "urb.casuarinas mz f1, NUEVO CHIMBOTE",
+      "NumeroCalle": "lote 19",
+      "Distrito": "NUEVO CHIMBOTE",
+      "Ciudad": "SANTA",
+      "Pais": "PE",
+      "CodigoPostal": "02712",
+      "Latitud": "-9.1352260",
+      "Longitud": "-78.522082",
+      "Referencia": "al costado de la clínica del riñon",
+      "IdEquipo": "368386",
+      "CodigoExternoEquipo": "3120SOLRD5500SPC",
+      "NombreEquipo": "RAPIDUCHA SOLE SUPER PRO 5500W C/AC",
+      "ComentarioProgramador": "WEBPROMART/ INSTA",
+      "IDEmpresa": "1314EXT-P",
+      "CodigoTecnico": "castrujillosole000",
+      "NombreTecnico": "REY WALTER BENJAMIN",
+      "ApellidoTecnico": "FUENTES ALVA",
+      "VisitaRealizada": "false",
+      "TrabajoRealizado": "false",
+      "SolicitaNuevaVisita": "false",
+      "MotivoNuevaVisita": "CLIENTE POSTERGA EL SERVICIO",
+      "CodMotivoIncidente": "null",
+      "FechaModificacionIT": "2025-11-12T09:27:54",
+      "ComentarioTecnico": "Se reprograma.servicio"
+    },
+    {
+      "Ticket": "1000002",
+      "LlamadaFSM": "753160",
+      "Asunto": "2025-11-09T16:53:42",
+      "Estado": "Closed",
+      "FechaVisita": "2025-11-11T13:00:00",
+      "CheckOut": "2025-11-11T18:55:00",
+      "FechaUltimaModificacion": "2025-11-11T18:56:13",
+      "IdServicio": "CA_2",
+      "IdCliente": "1300580",
+      "CodigoExternoCliente": "45462910",
+      "NombreCliente": "JESUS EDUARD  QUISPECUSICUNA",
+      "Email": "jequispecu@gmail.com",
+      "Celular1": "+51 965969770",
+      "Celular2": "null",
+      "Telefono1": "null",
+      "Calle": "MZ C LOTE 40 URB LOS OLIVOS, LOS OLIVOS",
+      "NumeroCalle": ".",
+      "Distrito": "LOS OLIVOS",
+      "Ciudad": "LIMA",
+      "Pais": "PE",
+      "CodigoPostal": "15113",
+      "Latitud": "-11.954882",
+      "Longitud": "-77.092076",
+      "Referencia": ": Jr. Las Adelfas",
+      "IdEquipo": "411499",
+      "CodigoExternoEquipo": "3120SOLRD4200SC",
+      "NombreEquipo": "RAPIDUCHA START 4200W C/ACC",
+      "ComentarioProgramador": "*CAS*REVI/ BRINDAR RH / PRODUCTO NO CALIENTA / ULTIMO MANTO 21/08/2025",
+      "IDEmpresa": "1306EXT",
+      "CodigoTecnico": "tonyd150591000",
+      "NombreTecnico": "FSI LUIS ANTONY ALEXANDER",
+      "ApellidoTecnico": "BARCO LAZO",
+      "VisitaRealizada": "true",
+      "TrabajoRealizado": "false",
+      "SolicitaNuevaVisita": "false",
+      "MotivoNuevaVisita": "CLIENTE AUSENTE",
+      "CodMotivoIncidente": "null",
+      "FechaModificacionIT": "2025-11-11T23:52:22",
+      "ComentarioTecnico": "SE COORDINO VISITA CON CLIENTE INDICANDO QUE DEJARA ALGUIEN ENCARGADO .\nSE LLEGO AL DOMICILIO Y NO SE ENCONTRO A NADIE CLIENTE INDICA QUE NO HAY NADIE QUIEN ME ATIENDA ."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+﻿
+============================================================
+  SEO CHECKER - Search Engine Optimization Audit
+============================================================
+Project: C:\Users\onunez\OneDrive - MT INDUSTRIAL S.A.C\Escritorio\Proyectos_Antigravity\siatc-3.0
+Time: 2026-02-09 15:08:31
+------------------------------------------------------------
+Found 2 page files to analyze
+
+============================================================
+SEO ANALYSIS RESULTS
+============================================================
+
+Issue Summary:
+  [1] Missing meta description
+  [1] Missing Open Graph tags
+
+Affected files (1):
+  - index.html
+
+{
+  "script": "seo_checker",
+  "project": "C:\\Users\\onunez\\OneDrive - MT INDUSTRIAL S.A.C\\Escritorio\\Proyectos_Antigravity\\siatc-3.0",
+  "files_checked": 2,
+  "files_with_issues": 1,
+  "issues_found": 2,
+  "passed": false
+}

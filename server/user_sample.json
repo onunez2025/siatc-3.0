@@ -1,0 +1,57 @@
+[
+  {
+    "ID Usuario": "CCERNA",
+    "Correo": "inspectorcalidad@sole.com.pe",
+    "Empresa": "a8ccb392",
+    "Tipo": "a36abc19",
+    "Cod_usuario": "8600161",
+    "Contraseña": "123",
+    "Nombre": "CLAUDIA",
+    "Apellido": "CERNA MORALES",
+    "Estado": null
+  },
+  {
+    "ID Usuario": "JROBLES ",
+    "Correo": "jrobles@sole.com.pe",
+    "Empresa": "e9a5a911",
+    "Tipo": "2c0b22f2",
+    "Cod_usuario": null,
+    "Contraseña": "robles123",
+    "Nombre": "JONATHAN MOISES",
+    "Apellido": "ROBLES YAÑEZ",
+    "Estado": null
+  },
+  {
+    "ID Usuario": "CCACERES",
+    "Correo": "carlosalberto_g12@hotmail.com",
+    "Empresa": "e9a5a911",
+    "Tipo": "57e154a5",
+    "Cod_usuario": "00005376",
+    "Contraseña": "ROJAS123",
+    "Nombre": "CARLOS ALBERTO",
+    "Apellido": "CACERES ROJAS",
+    "Estado": null
+  },
+  {
+    "ID Usuario": "IZARATE",
+    "Correo": "izarate@sole.com.pe",
+    "Empresa": "e9a5a911",
+    "Tipo": "ac4ecbb1",
+    "Cod_usuario": "00004092",
+    "Contraseña": "123",
+    "Nombre": "ISRAEL ALEJANDRO",
+    "Apellido": "ZARATE ENRIQUEZ",
+    "Estado": "1"
+  },
+  {
+    "ID Usuario": "OMONTALVAN",
+    "Correo": "programador60@sole.com.pe",
+    "Empresa": "a8ccb392",
+    "Tipo": "5758f40d",
+    "Cod_usuario": null,
+    "Contraseña": "MONTALVAN123",
+    "Nombre": "ODETH CORINA",
+    "Apellido": "MONTALVAN PRADO",
+    "Estado": null
+  }
+]

@@ -3,20 +3,18 @@ const { getConnection, sql } = require('../db');
 
 // Configuration
 const SYNC_INTERVAL = '*/1 * * * *'; // Every minute
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = 5000;
+const LOOKBACK_HOURS = 1; // Always look back 1 hour to catch missed updates
 
-async function getLastSyncDate(pool) {
-    // Use LastSync (our own controlled timestamp) instead of FechaModificacionIT
-    // which comes from the source and can contain corrupt/future dates.
-    // Also cap it at GETDATE() to avoid future-date watermark issues.
+async function getSyncWindowStart(pool) {
+    // Strategy: Always look back LOOKBACK_HOURS from now.
+    // This ensures that even if FechaModificacionIT didn't change on a record,
+    // we still re-compare it as long as it was touched in the last hour.
+    // Additionally, cap at GETDATE() to avoid future-date issues.
     const result = await pool.request().query(`
-        SELECT CASE 
-            WHEN MAX(LastSync) > GETDATE() THEN GETDATE()
-            ELSE COALESCE(MAX(LastSync), '2020-01-01')
-        END as lastSync 
-        FROM [SIATC].[Tickets]
+        SELECT DATEADD(HOUR, -${LOOKBACK_HOURS}, GETDATE()) as syncWindowStart
     `);
-    return result.recordset[0].lastSync;
+    return result.recordset[0].syncWindowStart;
 }
 
 function cleanString(val) {
@@ -50,20 +48,26 @@ async function syncTickets() {
         console.log(`[SYNC] Starting synchronization at ${new Date().toISOString()}...`);
         pool = await getConnection();
 
-        // 1. Get Watermark
-        const lastSyncDate = await getLastSyncDate(pool);
-        console.log(`[SYNC] Last Sync Date (Watermark): ${lastSyncDate.toISOString()}`);
+        // 1. Get sync window (1 hour lookback)
+        const syncWindowStart = await getSyncWindowStart(pool);
+        console.log(`[SYNC] Sync window: from ${syncWindowStart.toISOString()} (${LOOKBACK_HOURS}h lookback)`);
 
-        // 2. Fetch Updates from Source
-        // Strategy: Get records modified since our last sync, AND also any records
-        // that exist in source but not in target (to cover gaps/missed records).
+        // 2. Fetch records that need syncing:
+        //    a) Records modified in the source within the lookback window
+        //    b) Records that exist in source but not in target (new records)
+        //    c) Records where Estado differs between source and target (stale data)
         const updatesResult = await pool.request()
-            .input('lastSync', sql.DateTime, lastSyncDate)
+            .input('syncWindowStart', sql.DateTime, syncWindowStart)
             .query(`
-                SELECT TOP (${BATCH_SIZE}) *
+                SELECT TOP (${BATCH_SIZE}) s.*
                 FROM [APPGAC].[Servicios] s
-                WHERE TRY_CAST(s.FechaModificacionIT AS DATETIME) > @lastSync
-                   OR NOT EXISTS (SELECT 1 FROM [SIATC].[Tickets] t WHERE t.Ticket = TRIM(s.Ticket))
+                LEFT JOIN [SIATC].[Tickets] t ON t.Ticket = TRIM(s.Ticket)
+                WHERE TRY_CAST(s.FechaModificacionIT AS DATETIME) > @syncWindowStart
+                   OR t.Ticket IS NULL
+                   OR TRIM(s.Estado) != t.Estado
+                   OR ISNULL(TRIM(s.CodigoTecnico),'') != ISNULL(t.CodigoTecnico,'')
+                   OR ISNULL(TRIM(s.NombreTecnico),'') != ISNULL(t.NombreTecnico,'')
+                   OR TRY_CAST(s.FechaUltimaModificacion AS DATETIME) != t.FechaUltimaModificacion
                 ORDER BY TRY_CAST(s.FechaModificacionIT AS DATETIME) ASC
             `);
 

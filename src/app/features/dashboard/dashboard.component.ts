@@ -105,15 +105,23 @@ interface DashboardData {
             </div>
             <div class="p-5 space-y-3">
               @for (item of data().statusDistribution; track item.status) {
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 group/bar relative cursor-pointer">
                   <div class="w-28 text-xs text-slate-600 font-medium truncate" [title]="item.status">{{ item.status }}</div>
-                  <div class="flex-1 h-7 bg-slate-100 rounded overflow-hidden">
-                    <div class="h-full rounded transition-all duration-700 ease-out"
+                  <div class="flex-1 h-7 bg-slate-100 rounded overflow-hidden relative">
+                    <div class="h-full rounded transition-all duration-700 ease-out group-hover/bar:brightness-110"
                       [ngClass]="getStatusBarColor(item.status)"
                       [style.width.%]="getStatusPct(item.count)">
                     </div>
                   </div>
                   <div class="w-12 text-right text-xs font-bold text-slate-700">{{ item.count }}</div>
+                  <!-- Tooltip -->
+                  <div class="absolute left-32 -top-12 z-50 opacity-0 group-hover/bar:opacity-100 pointer-events-none transition-opacity duration-200">
+                    <div class="bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">
+                      <p class="font-bold">{{ item.status }}</p>
+                      <p>{{ item.count | number }} tickets &middot; {{ getStatusPctOfTotal(item.count) }}% del total</p>
+                      <div class="absolute left-6 -bottom-1 w-2 h-2 bg-slate-800 rotate-45"></div>
+                    </div>
+                  </div>
                 </div>
               }
               @if (data().statusDistribution.length === 0 && !loading()) {
@@ -132,15 +140,25 @@ interface DashboardData {
               <!-- Mini bar chart -->
               <div class="flex items-end gap-2 h-32">
                 @for (day of data().trend; track day.date) {
-                  <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="flex-1 flex flex-col items-center gap-1 group/trend relative cursor-pointer">
                     <span class="text-[9px] font-bold text-slate-600">{{ day.total }}</span>
-                    <div class="w-full flex flex-col gap-0.5" style="height: 100px">
+                    <div class="w-full flex flex-col gap-0.5 group-hover/trend:brightness-110 transition-all" style="height: 100px">
                       <div class="w-full bg-green-400 rounded-t transition-all duration-500"
                         [style.height.px]="getTrendBarHeight(day.closed, day.total)"></div>
                       <div class="w-full bg-primary/70 rounded-b transition-all duration-500 flex-1"
                         [style.height.px]="getTrendBarHeight(day.total - day.closed, day.total)"></div>
                     </div>
                     <span class="text-[9px] text-slate-400">{{ day.date | date:'EEE' }}</span>
+                    <!-- Tooltip -->
+                    <div class="absolute -top-24 left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover/trend:opacity-100 pointer-events-none transition-opacity duration-200">
+                      <div class="bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">
+                        <p class="font-bold">{{ day.date | date:'EEE dd MMM' }}</p>
+                        <div class="flex items-center gap-1.5 mt-0.5"><span class="w-2 h-2 rounded-sm bg-green-400"></span> Cerrados: {{ day.closed | number }}</div>
+                        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-primary/70"></span> Otros: {{ day.total - day.closed | number }}</div>
+                        <div class="mt-0.5 text-slate-300">Tasa cierre: {{ day.total === 0 ? 0 : ((day.closed / day.total) * 100).toFixed(0) }}%</div>
+                        <div class="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-slate-800 rotate-45"></div>
+                      </div>
+                    </div>
                   </div>
                 }
               </div>
@@ -328,6 +346,11 @@ export class DashboardComponent implements OnInit {
     getStatusPct(count: number): number {
         const max = Math.max(...this.data().statusDistribution.map(s => s.count), 1);
         return Math.round((count / max) * 100);
+    }
+
+    getStatusPctOfTotal(count: number): number {
+        const total = this.data().ticketsToday.total;
+        return total === 0 ? 0 : Math.round((count / total) * 100);
     }
 
     getStatusBarColor(status: string): string {

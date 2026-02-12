@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FSM Ticket Details View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-icons">settings_remote</span>
+</div>
+<h1 class="font-bold text-xl tracking-tight">FSM <span class="text-primary">Connect</span></h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-icons">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+<span class="material-icons text-slate-500">person</span>
+</div>
+</div>
+</nav>
+<main class="max-w-[1440px] mx-auto p-6">
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+<div class="flex items-center gap-2 text-slate-500 text-sm mb-1 sm:mb-0">
+<span class="material-icons text-sm">confirmation_number</span>
+<span>Tickets</span>
+<span class="material-icons text-sm">chevron_right</span>
+</div>
+<div class="flex items-center gap-3">
+<h2 class="text-2xl font-bold">Ticket #TK-8829</h2>
+<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200 dark:border-blue-800">
+                        In Progress
+                    </span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition-all">
+<span class="material-icons text-sm">edit</span>
+                    Edit Ticket
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-all">
+<span class="material-icons text-sm">check_circle</span>
+                    Close Ticket
+                </button>
+</div>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-6">
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center gap-2">
+<span class="material-icons text-primary text-xl">info</span>
+<h3 class="font-bold text-lg">General Information</h3>
+</div>
+<div class="p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+<div class="flex flex-col gap-1">
+<label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Client Name</label>
+<p class="text-slate-900 dark:text-slate-100 font-medium text-lg">Acme Global Industries</p>
+<p class="text-sm text-slate-400">ID: CLI-4491-X</p>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Priority</label>
+<div class="flex items-center gap-2">
+<span class="h-3 w-3 rounded-full bg-orange-500"></span>
+<span class="font-medium">High Priority</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Service Type</label>
+<p class="text-slate-900 dark:text-slate-100 font-medium">Hardware Repair &amp; Diagnostic</p>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Service Location</label>
+<div class="flex items-center gap-1 text-slate-600 dark:text-slate-400">
+<span class="material-icons text-sm">location_on</span>
+<p class="text-sm">451 Industrial Way, Suite 200, Austin, TX</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center gap-2">
+<span class="material-icons text-primary text-xl">description</span>
+<h3 class="font-bold text-lg">Issue Description</h3>
+</div>
+<div class="p-6">
+<div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-800">
+<p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                Client reports that the primary HVAC control unit (Model RX-500) is displaying a "Critical Error 404" and has stopped regulating the temperature in the server room. Internal fans are still spinning but the cooling cycle is not engaging. This requires urgent attention as the server temperatures are rising steadily. Preliminary checks show no power surges in the facility.
+                            </p>
+</div>
+</div>
+</section>
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center gap-2">
+<span class="material-icons text-primary text-xl">assignment_ind</span>
+<h3 class="font-bold text-lg">Assignment</h3>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex items-start gap-4 p-4 border border-slate-100 dark:border-slate-800 rounded-lg">
+<div class="bg-primary/10 text-primary p-3 rounded-full">
+<span class="material-icons">engineering</span>
+</div>
+<div>
+<label class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Assigned Technician</label>
+<p class="font-bold text-slate-900 dark:text-slate-100">Marcus Sterling</p>
+<p class="text-sm text-slate-500">Lead Field Engineer</p>
+<div class="mt-2 flex gap-2">
+<button class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded text-slate-600 dark:text-slate-400">View Profile</button>
+<button class="text-xs px-2 py-1 bg-primary text-white rounded">Message</button>
+</div>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 border border-slate-100 dark:border-slate-800 rounded-lg">
+<div class="bg-primary/10 text-primary p-3 rounded-full">
+<span class="material-icons">event</span>
+</div>
+<div>
+<label class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Scheduled Date &amp; Time</label>
+<p class="font-bold text-slate-900 dark:text-slate-100">October 24, 2023</p>
+<p class="text-sm text-slate-500">09:30 AM - 12:00 PM CST</p>
+<div class="mt-2 flex gap-1 items-center text-primary text-sm font-medium">
+<span class="material-icons text-sm">schedule</span>
+                                    Starts in 4 hours
+                                </div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-full">
+<div class="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary text-xl">history</span>
+<h3 class="font-bold text-lg">Activity History</h3>
+</div>
+<span class="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">7 Total</span>
+</div>
+<div class="p-6 flex-grow">
+<div class="relative space-y-8 before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:via-slate-200 before:to-transparent dark:before:from-slate-800 dark:before:via-slate-800">
+<div class="relative flex items-start group">
+<div class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary ring-4 ring-white dark:ring-slate-900 shadow-sm">
+<span class="material-icons text-white text-sm">edit</span>
+</div>
+<div class="ml-12 pt-0.5">
+<time class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Today, 10:15 AM</time>
+<div class="mt-1">
+<p class="text-sm font-semibold">Ticket Updated</p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Status changed from <span class="text-amber-500 font-medium italic">Pending</span> to <span class="text-primary font-medium italic">In Progress</span></p>
+</div>
+<p class="text-xs text-slate-400 mt-1 italic">by Admin Sarah Connor</p>
+</div>
+</div>
+<div class="relative flex items-start group">
+<div class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 ring-4 ring-white dark:ring-slate-900">
+<span class="material-icons text-slate-500 dark:text-slate-300 text-sm">assignment_turned_in</span>
+</div>
+<div class="ml-12 pt-0.5">
+<time class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Today, 09:40 AM</time>
+<div class="mt-1">
+<p class="text-sm font-semibold">Technician Assigned</p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Marcus Sterling assigned to this ticket.</p>
+</div>
+</div>
+</div>
+<div class="relative flex items-start group">
+<div class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 ring-4 ring-white dark:ring-slate-900">
+<span class="material-icons text-slate-500 dark:text-slate-300 text-sm">chat</span>
+</div>
+<div class="ml-12 pt-0.5">
+<time class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Oct 23, 04:22 PM</time>
+<div class="mt-1">
+<p class="text-sm font-semibold">Internal Note Added</p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">"Customer mentioned they have replacement filters available on-site if needed."</p>
+</div>
+</div>
+</div>
+<div class="relative flex items-start group">
+<div class="absolute left-0 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 ring-4 ring-white dark:ring-slate-900 shadow-sm">
+<span class="material-icons text-white text-sm">add_circle</span>
+</div>
+<div class="ml-12 pt-0.5">
+<time class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Oct 23, 02:15 PM</time>
+<div class="mt-1">
+<p class="text-sm font-semibold text-green-600 dark:text-green-400 uppercase tracking-widest">Ticket Created</p>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Initial ticket submission received via Customer Portal.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+<button class="w-full py-2 flex items-center justify-center gap-2 text-primary font-bold text-sm hover:underline">
+<span class="material-icons text-sm">keyboard_arrow_down</span>
+                            View Full History Log
+                        </button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-4">
+<h4 class="text-sm font-bold mb-3 flex items-center gap-2">
+<span class="material-icons text-slate-400 text-sm">map</span>
+                        Site Location
+                    </h4>
+<div class="rounded-lg h-40 bg-slate-200 dark:bg-slate-800 relative overflow-hidden flex items-center justify-center group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 dark:opacity-40 transition-transform duration-500 group-hover:scale-105" data-alt="Map showing Austin Texas city grid" data-location="Austin, Texas" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLHM9TgNR1VXLTIxZhG6ioGyaS0VWQviMokJrX7Cf2L3T-LmJNAxsHplSAG_-Af6C4Fc-YcRhd6tpfeu3B11vtC00pbYpbVkgSM0FNW8baQrhYJTe0Epx6jhK9rvpoTHV44OzNWxh0HwIm3v4ob6g_-beAd2iXM3LLIkHPK7Z4WEQdvzwEbAtWoKJzpRGPiHhhU9WqSP8LdX-2Vs62FShwoGne5JBxWkQXN8dCo2NvH2SlB3lvX6ubqD3ZlnS06OvGxAPDaAOBUZw"/>
+<div class="relative z-10 bg-white/90 dark:bg-slate-900/90 px-3 py-1.5 rounded-full shadow-lg border border-white dark:border-slate-700 flex items-center gap-2">
+<span class="material-icons text-red-500 text-sm">location_on</span>
+<span class="text-xs font-bold uppercase tracking-wide">451 Industrial Way</span>
+</div>
+</div>
+<button class="w-full mt-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
+                        Get Directions
+                    </button>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

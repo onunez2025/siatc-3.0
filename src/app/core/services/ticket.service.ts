@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, finalize, Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Observable, tap, finalize, Subject, debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface Ticket {
@@ -31,11 +31,18 @@ interface TicketResponse {
     };
 }
 
-interface TicketSearchParams {
+export interface TicketSearchParams {
     page?: number;
     limit?: number;
     search?: string;
     status?: string;
+    tecnico?: string;
+    cliente?: string;
+    empresa?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+    sortBy?: string;
+    sortDir?: 'asc' | 'desc';
 }
 
 @Injectable({
@@ -69,9 +76,7 @@ export class TicketService {
         this.searchSubject.pipe(
             debounceTime(300), // Wait 300ms after user stops typing
             distinctUntilChanged((prev, curr) => 
-                prev.search === curr.search && 
-                prev.status === curr.status && 
-                prev.page === curr.page
+                JSON.stringify(prev) === JSON.stringify(curr)
             ),
             switchMap(params => this.fetchTickets(params))
         ).subscribe();
@@ -88,7 +93,7 @@ export class TicketService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        // Check cache first
+        // Invalidate cache when filters change to avoid stale data
         const cacheKey = this.getCacheKey(params);
         const cached = this.cache.get(cacheKey);
         
@@ -99,7 +104,16 @@ export class TicketService {
             return;
         }
 
-        this.fetchTickets(params).subscribe();
+        this.fetchTickets(params).subscribe({
+            next: (res) => {
+                console.log('loadTickets success:', res.data?.length, 'tickets');
+            },
+            error: (err) => {
+                console.error('Error loading tickets:', err);
+                this.errorSignal.set(err.message || 'Error loading tickets');
+                this.loadingSignal.set(false);
+            }
+        });
     }
 
     private fetchTickets(params: TicketSearchParams): Observable<TicketResponse> {
@@ -109,16 +123,31 @@ export class TicketService {
 
         if (params.search) httpParams = httpParams.set('search', params.search);
         if (params.status) httpParams = httpParams.set('status', params.status);
+        if (params.tecnico) httpParams = httpParams.set('col_NombreTecnico', params.tecnico);
+        if (params.cliente) httpParams = httpParams.set('col_NombreCliente', params.cliente);
+        if (params.empresa) httpParams = httpParams.set('col_IDEmpresa', params.empresa);
+        if (params.fechaDesde) httpParams = httpParams.set('fechaDesde', params.fechaDesde);
+        if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
+        if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
+        if (params.sortDir) httpParams = httpParams.set('sortDir', params.sortDir);
+
+        console.log('Fetching tickets from:', `${this.apiUrl}/tickets`, 'with params:', params);
 
         return this.http.get<TicketResponse>(`${this.apiUrl}/tickets`, { params: httpParams })
             .pipe(
                 tap(res => {
+                    console.log('Tickets received:', res);
                     this.ticketsSignal.set(res.data);
                     this.paginationSignal.set(res.pagination);
                     
                     // Update cache
                     const cacheKey = this.getCacheKey(params);
                     this.cache.set(cacheKey, { data: res, timestamp: Date.now() });
+                }),
+                catchError(err => {
+                    console.error('HTTP Error:', err);
+                    this.errorSignal.set(err.message || 'Error fetching tickets');
+                    return of({ data: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 0 } });
                 }),
                 finalize(() => this.loadingSignal.set(false))
             );
@@ -129,7 +158,14 @@ export class TicketService {
             page: params.page || 1,
             limit: params.limit || 10,
             search: params.search || '',
-            status: params.status || ''
+            status: params.status || '',
+            tecnico: params.tecnico || '',
+            cliente: params.cliente || '',
+            empresa: params.empresa || '',
+            fechaDesde: params.fechaDesde || '',
+            fechaHasta: params.fechaHasta || '',
+            sortBy: params.sortBy || '',
+            sortDir: params.sortDir || ''
         });
     }
 

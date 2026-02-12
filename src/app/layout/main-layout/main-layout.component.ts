@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { environment } from '../../../environments/environment';
@@ -18,7 +18,7 @@ interface TicketStats {
     standalone: true,
     imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
     template: `
-    <div class="min-h-screen flex bg-gradient-to-br from-slate-50 to-slate-100 font-sans overflow-hidden">
+    <div class="min-h-screen flex bg-background-light font-sans overflow-hidden">
       
       <!-- Sidebar -->
       <aside 
@@ -49,30 +49,67 @@ interface TicketStats {
           <a routerLink="/dashboard" routerLinkActive="active-nav-item" [routerLinkActiveOptions]="{exact: true}"
              class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group text-slate-400 hover:text-white hover:bg-slate-700/50">
             <div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-blue-500/20 flex items-center justify-center transition-all group-[.active-nav-item]:bg-blue-500">
-              <i class="fas fa-chart-pie text-sm group-[.active-nav-item]:text-white"></i>
+              <span class="material-icons text-lg group-[.active-nav-item]:text-white">dashboard</span>
             </div>
             <span class="font-medium">Dashboard</span>
-            <i class="fas fa-chevron-right text-[10px] ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i>
           </a>
 
           <a routerLink="/tickets" routerLinkActive="active-nav-item"
              class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group text-slate-400 hover:text-white hover:bg-slate-700/50">
             <div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-orange-500/20 flex items-center justify-center transition-all group-[.active-nav-item]:bg-blue-500">
-              <i class="fas fa-ticket-alt text-sm group-[.active-nav-item]:text-white"></i>
+              <span class="material-icons text-lg group-[.active-nav-item]:text-white">confirmation_number</span>
             </div>
             <span class="font-medium">Tickets</span>
             <span class="ml-auto px-2 py-0.5 text-[10px] font-bold bg-orange-500/20 text-orange-400 rounded-full">{{ pendingCount() }}</span>
           </a>
 
+          <a routerLink="/items" routerLinkActive="active-nav-item"
+             class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group text-slate-400 hover:text-white hover:bg-slate-700/50">
+            <div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-cyan-500/20 flex items-center justify-center transition-all group-[.active-nav-item]:bg-blue-500">
+              <span class="material-icons text-lg group-[.active-nav-item]:text-white">inventory_2</span>
+            </div>
+            <span class="font-medium">Items</span>
+          </a>
+
           @if (isAdmin()) {
-            <a routerLink="/users" routerLinkActive="active-nav-item"
-               class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group text-slate-400 hover:text-white hover:bg-slate-700/50">
-              <div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 flex items-center justify-center transition-all group-[.active-nav-item]:bg-blue-500">
-                <i class="fas fa-users text-sm group-[.active-nav-item]:text-white"></i>
-              </div>
-              <span class="font-medium">Usuarios</span>
-              <i class="fas fa-chevron-right text-[10px] ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i>
-            </a>
+            <!-- Administración (collapsible) -->
+            <div class="pt-3">
+              <p class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Administración</p>
+            </div>
+
+            <!-- Usuarios & Accesos (grupo con submenú) -->
+            <div>
+              <button (click)="toggleMenu('admin')" type="button"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group text-slate-400 hover:text-white hover:bg-slate-700/50"
+                [class.text-white]="isMenuActive('admin')" [class.bg-slate-700/30]="isMenuActive('admin')">
+                <div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 flex items-center justify-center transition-all"
+                  [class.!bg-blue-500]="isMenuActive('admin')">
+                  <span class="material-icons text-lg" [class.text-white]="isMenuActive('admin')">admin_panel_settings</span>
+                </div>
+                <span class="font-medium flex-1 text-left">Usuarios & Accesos</span>
+                <span class="material-icons text-sm transition-transform duration-200" [class.rotate-180]="openMenus().includes('admin')">expand_more</span>
+              </button>
+
+              @if (openMenus().includes('admin')) {
+                <div class="ml-6 pl-4 border-l border-slate-700/50 space-y-0.5 mt-1 mb-1">
+                  <a routerLink="/users" routerLinkActive="sub-active" [routerLinkActiveOptions]="{exact: true}"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all text-slate-500 hover:text-white hover:bg-slate-700/40">
+                    <span class="material-icons text-base">people</span>
+                    <span>Usuarios</span>
+                  </a>
+                  <a routerLink="/users/roles" routerLinkActive="sub-active"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all text-slate-500 hover:text-white hover:bg-slate-700/40">
+                    <span class="material-icons text-base">shield</span>
+                    <span>Roles</span>
+                  </a>
+                  <a routerLink="/empresas" routerLinkActive="sub-active"
+                     class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all text-slate-500 hover:text-white hover:bg-slate-700/40">
+                    <span class="material-icons text-base">business</span>
+                    <span>Empresas</span>
+                  </a>
+                </div>
+              }
+            </div>
           }
         </nav>
 
@@ -91,7 +128,7 @@ interface TicketStats {
             </div>
           </div>
           <button (click)="authService.logout()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800/50 text-slate-400 rounded-xl text-sm font-medium hover:bg-red-500/10 hover:text-red-400 transition-all border border-slate-700/50 hover:border-red-500/30 group">
-            <i class="fas fa-sign-out-alt group-hover:animate-bounce-subtle"></i>
+            <span class="material-icons text-base">logout</span>
             <span>Cerrar Sesión</span>
           </button>
         </div>
@@ -103,14 +140,12 @@ interface TicketStats {
         <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 shadow-sm shrink-0">
           <div class="flex items-center gap-4">
             <button (click)="toggleSidebar()" class="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all hover:scale-105 active:scale-95">
-              <i class="fas fa-bars text-lg"></i>
+              <span class="material-icons">menu</span>
             </button>
             
             <!-- Breadcrumb could go here -->
             <div class="hidden sm:flex items-center gap-2 text-sm">
-              <span class="text-slate-400">
-                <i class="fas fa-home"></i>
-              </span>
+              <span class="material-icons text-slate-400 text-base">home</span>
               <span class="text-slate-300">/</span>
               <span class="text-slate-600 font-medium">{{ getCurrentSection() }}</span>
             </div>
@@ -119,7 +154,7 @@ interface TicketStats {
           <div class="flex items-center gap-4">
             <!-- Notifications -->
             <button class="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-              <i class="fas fa-bell"></i>
+              <span class="material-icons">notifications</span>
               <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             </button>
             
@@ -132,7 +167,7 @@ interface TicketStats {
         </header>
 
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50/50 to-white custom-scroll">
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background-light custom-scroll">
           <router-outlet></router-outlet>
         </div>
       </main>
@@ -152,17 +187,26 @@ interface TicketStats {
     .active-nav-item .w-8 {
       background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
     }
-    .active-nav-item i {
+    .active-nav-item .material-icons {
       color: white !important;
+    }
+    .sub-active {
+      color: white !important;
+      background: rgba(59, 130, 246, 0.1);
+    }
+    .sub-active .material-icons {
+      color: #60a5fa !important;
     }
   `]
 })
 export class MainLayoutComponent implements OnInit, OnDestroy {
     private http = inject(HttpClient);
+    private router = inject(Router);
     authService = inject(AuthService);
     isAdmin = this.authService.isAdmin;
     isSidebarOpen = signal(false);
     pendingCount = signal(0);
+    openMenus = signal<string[]>(['admin']);
     private refreshInterval: any;
 
     ngOnInit() {
@@ -188,6 +232,18 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
     toggleSidebar() {
         this.isSidebarOpen.update(v => !v);
+    }
+
+    toggleMenu(menu: string) {
+        this.openMenus.update(menus => 
+            menus.includes(menu) ? menus.filter(m => m !== menu) : [...menus, menu]
+        );
+    }
+
+    isMenuActive(menu: string): boolean {
+        const path = window.location.pathname;
+        if (menu === 'admin') return path.includes('/users') || path.includes('/empresas');
+        return false;
     }
 
     getCurrentSection(): string {

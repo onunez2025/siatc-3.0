@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile FSM Ticket List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar for mobile feel */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+<!-- Mobile Device Container -->
+<div class="relative w-full max-w-[420px] h-screen sm:h-[844px] bg-white dark:bg-slate-900 shadow-2xl sm:rounded-3xl overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800">
+<!-- Top Sticky Header -->
+<header class="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 px-6 pt-6 pb-4">
+<div class="flex items-center justify-between mb-4">
+<h1 class="text-2xl font-bold tracking-tight">Tickets</h1>
+<div class="flex items-center space-x-2">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-icons">search</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors relative">
+<span class="material-icons">tune</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</div>
+</div>
+<!-- Quick Filter Tabs -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+<button class="px-4 py-1.5 bg-primary text-white rounded-full text-sm font-medium whitespace-nowrap">All Tickets</button>
+<button class="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Pending</button>
+<button class="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">In Progress</button>
+<button class="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Closed</button>
+</div>
+</header>
+<!-- Scrollable Ticket List -->
+<main class="flex-1 overflow-y-auto px-6 py-4 space-y-4 hide-scrollbar">
+<!-- Ticket Card 1 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">#FSM-1024</span>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Acme Corp HQ</h3>
+</div>
+<span class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider rounded">Critical</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+<span class="material-icons text-sm">schedule</span>
+<span class="text-xs">Due in 2 hrs</span>
+</div>
+<span class="px-3 py-1 bg-primary/10 dark:bg-primary/20 text-primary text-xs font-semibold rounded-full border border-primary/20">In Progress</span>
+</div>
+</div>
+<!-- Ticket Card 2 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">#FSM-1025</span>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Global Logistics Ltd</h3>
+</div>
+<span class="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider rounded">High</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+<span class="material-icons text-sm">schedule</span>
+<span class="text-xs">Scheduled for Tomorrow</span>
+</div>
+<span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-full border border-slate-200 dark:border-slate-600">Pending</span>
+</div>
+</div>
+<!-- Ticket Card 3 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">#FSM-1026</span>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">TechStart Inc</h3>
+</div>
+<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded">Medium</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+<span class="material-icons text-sm">done_all</span>
+<span class="text-xs">Completed 3h ago</span>
+</div>
+<span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold rounded-full border border-emerald-200 dark:border-emerald-800/30">Resolved</span>
+</div>
+</div>
+<!-- Ticket Card 4 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">#FSM-1027</span>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Summit Health</h3>
+</div>
+<span class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded">Low</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+<span class="material-icons text-sm">schedule</span>
+<span class="text-xs">Next Week</span>
+</div>
+<span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-full border border-slate-200 dark:border-slate-600">Open</span>
+</div>
+</div>
+<!-- Ticket Card 5 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm opacity-90">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">#FSM-1028</span>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Urban Cafe</h3>
+</div>
+<span class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider rounded">Critical</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
+<span class="material-icons text-sm">priority_high</span>
+<span class="text-xs">Overdue</span>
+</div>
+<span class="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-full border border-rose-200 dark:border-rose-800/30">Action Required</span>
+</div>
+</div>
+<div class="pb-24"></div> <!-- Spacer for FAB -->
+</main>
+<!-- Floating Action Button -->
+<button class="absolute bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 z-30">
+<span class="material-icons text-3xl">add</span>
+</button>
+<!-- Bottom Navigation -->
+<nav class="absolute bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 px-6 py-3 pb-8 sm:pb-3 flex justify-between items-center z-40">
+<a class="flex flex-col items-center space-y-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-icons">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center space-y-1 text-primary" href="#">
+<span class="material-icons">confirmation_number</span>
+<span class="text-[10px] font-medium">Tickets</span>
+</a>
+<a class="flex flex-col items-center space-y-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-icons">calendar_today</span>
+<span class="text-[10px] font-medium">Schedule</span>
+</a>
+<a class="flex flex-col items-center space-y-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-icons">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</nav>
+<!-- Mock Filter Bottom Sheet (Visible state simulated with z-index and translation if needed) -->
+<!-- In a real app, this would be toggled. Here it's a hidden layer ready for styling. -->
+<div class="absolute inset-0 bg-black/40 z-[45] pointer-events-none opacity-0 transition-opacity"></div>
+<div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-800 rounded-t-3xl z-[50] translate-y-full transition-transform duration-300">
+<div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-6"></div>
+<div class="px-6 pb-10">
+<h2 class="text-xl font-bold mb-6">Filters</h2>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Priority</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-primary/10 text-primary border border-primary rounded-lg text-sm font-medium">All</span>
+<span class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium">Critical</span>
+<span class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium">High</span>
+</div>
+</div>
+<div>
+<label class="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Status</label>
+<select class="w-full bg-slate-100 dark:bg-slate-700 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+<option>All Statuses</option>
+<option>Open</option>
+<option>In Progress</option>
+<option>Resolved</option>
+</select>
+</div>
+<button class="w-full bg-primary text-white py-4 rounded-xl font-bold text-center shadow-lg shadow-primary/20">
+                        Apply Filters
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

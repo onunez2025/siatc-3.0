@@ -17,20 +17,20 @@ import { CommonModule } from '@angular/common';
 
       <!-- Drawer Panel -->
       <div 
-        class="relative w-full max-w-md bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ease-out"
+        class="relative w-full max-w-xl bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 ease-out"
         [class.translate-x-full]="closing"
         [class.translate-x-0]="!closing">
             
          <!-- Header -->
-         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-            <h2 class="text-lg font-bold text-slate-800">{{ title }}</h2>
-            <button (click)="onClose()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition-colors">
-               <i class="fas fa-times text-xl"></i>
+         <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
+            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">{{ title }}</h2>
+            <button (click)="onClose()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+               <span class="material-icons text-xl">close</span>
             </button>
          </div>
 
          <!-- Content -->
-         <div class="flex-1 overflow-y-auto custom-scroll p-6">
+         <div class="flex-1 overflow-y-auto bg-background-light">
             <ng-content></ng-content>
          </div>
 

@@ -35,6 +35,18 @@ export const routes: Routes = [
                 path: 'users',
                 loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent)
             },
+            {
+                path: 'users/roles',
+                loadComponent: () => import('./features/users/role-list/role-list.component').then(m => m.RoleListComponent)
+            },
+            {
+                path: 'empresas',
+                loadComponent: () => import('./features/empresas/empresa-list/empresa-list.component').then(m => m.EmpresaListComponent)
+            },
+            {
+                path: 'items',
+                loadComponent: () => import('./features/items/item-list/item-list.component').then(m => m.ItemListComponent)
+            },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

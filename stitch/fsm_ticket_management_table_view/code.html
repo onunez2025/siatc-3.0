@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ticket List - FSM Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply antialiased;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+<div class="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between gap-8">
+<div class="flex items-center gap-3">
+<h1 class="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100 uppercase">Ticket List</h1>
+</div>
+<div class="flex-1 max-w-xl relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-transparent focus:bg-white dark:focus:bg-slate-700 focus:border-primary focus:ring-0 rounded text-sm transition-all outline-none" placeholder="Search tickets by ID, client or subject..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
+<span class="material-icons text-xl">notifications</span>
+</button>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded flex items-center gap-2 font-semibold text-xs transition-all shadow-sm uppercase tracking-wide">
+<span class="material-icons text-sm">add</span>
+                Create Ticket
+            </button>
+</div>
+</div>
+</header>
+<main class="max-w-[1600px] mx-auto p-4 w-full flex-1 flex flex-col gap-4">
+<div class="bg-white dark:bg-slate-900 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-slate-400 uppercase mr-2">Filters:</span>
+<select class="text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded focus:ring-primary focus:border-primary py-1 px-2 min-w-[110px]">
+<option>Status: All</option>
+<option>Open</option>
+<option>Pending</option>
+<option>In Progress</option>
+<option>Resolved</option>
+</select>
+<select class="text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded focus:ring-primary focus:border-primary py-1 px-2 min-w-[110px]">
+<option>Priority: All</option>
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+</select>
+<select class="text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded focus:ring-primary focus:border-primary py-1 px-2 min-w-[130px]">
+<option>Technician: All</option>
+<option>Alex Rivera</option>
+<option>Sarah Chen</option>
+<option>Mike Ross</option>
+</select>
+<div class="relative">
+<span class="material-icons absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">calendar_today</span>
+<input class="pl-7 text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded focus:ring-primary focus:border-primary py-1 w-44" type="text" value="Oct 12 - Oct 24, 2023"/>
+</div>
+<button class="text-[10px] text-slate-500 hover:text-primary font-bold px-2 uppercase tracking-tighter">
+                    Reset
+                </button>
+</div>
+<div class="flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-4">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Export CSV">
+<span class="material-icons text-lg">file_download</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Print">
+<span class="material-icons text-lg">print</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Column Settings">
+<span class="material-icons text-lg">view_column</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex-1 flex flex-col overflow-hidden rounded">
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse min-w-[1000px]">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-10 text-center">
+<input class="rounded-sm border-slate-300 dark:border-slate-600 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-24">ID</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Client</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Subject</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Technician</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Priority</th>
+<th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">Last Updated</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-4 py-2.5 text-center">
+<input class="rounded-sm border-slate-300 dark:border-slate-600 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="px-4 py-2.5">
+<span class="text-primary font-bold text-sm cursor-pointer hover:underline">#FSM-8923</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-800 dark:text-slate-100">Global Tech Solutions</span>
+<span class="text-[10px] text-slate-500 uppercase">Palo Alto, CA</span>
+</div>
+</td>
+<td class="px-4 py-2.5">
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-1" title="HVAC unit periodic maintenance and filter replacement">HVAC unit periodic maintenance and filter replacement</p>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+<span class="text-[9px] font-bold text-slate-500">AR</span>
+</div>
+<span class="text-xs text-slate-700 dark:text-slate-200">Alex Rivera</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50 text-[10px] font-bold uppercase tracking-tight">
+                                In Progress
+                            </span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+<span class="text-xs font-medium">Medium</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-right whitespace-nowrap">
+<span class="text-xs text-slate-500 font-medium">24m ago</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-4 py-2.5 text-center">
+<input class="rounded-sm border-slate-300 dark:border-slate-600 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="px-4 py-2.5">
+<span class="text-primary font-bold text-sm cursor-pointer hover:underline">#FSM-8924</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-800 dark:text-slate-100">Silverado Retail</span>
+<span class="text-[10px] text-slate-500 uppercase">Austin, TX</span>
+</div>
+</td>
+<td class="px-4 py-2.5">
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">Electrical outage in Section B warehouse</p>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+<span class="text-[9px] font-bold text-slate-500">SC</span>
+</div>
+<span class="text-xs text-slate-700 dark:text-slate-200">Sarah Chen</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-red-200 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50 text-[10px] font-bold uppercase tracking-tight">
+                                Urgent
+                            </span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+<span class="text-xs font-bold text-red-600 dark:text-red-400">High</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-right whitespace-nowrap">
+<span class="text-xs text-slate-500 font-medium">1h ago</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-4 py-2.5 text-center">
+<input class="rounded-sm border-slate-300 dark:border-slate-600 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="px-4 py-2.5">
+<span class="text-primary font-bold text-sm cursor-pointer hover:underline">#FSM-8921</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-800 dark:text-slate-100">Blue Harbor Marina</span>
+<span class="text-[10px] text-slate-500 uppercase">Miami, FL</span>
+</div>
+</td>
+<td class="px-4 py-2.5">
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">Security camera system firmware update</p>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+<span class="text-[9px] font-bold text-slate-500">MR</span>
+</div>
+<span class="text-xs text-slate-700 dark:text-slate-200">Mike Ross</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-green-200 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50 text-[10px] font-bold uppercase tracking-tight">
+                                Resolved
+                            </span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+<span class="text-xs font-medium">Low</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-right whitespace-nowrap">
+<span class="text-xs text-slate-500 font-medium">3h ago</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-4 py-2.5 text-center">
+<input class="rounded-sm border-slate-300 dark:border-slate-600 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="px-4 py-2.5">
+<span class="text-primary font-bold text-sm cursor-pointer hover:underline">#FSM-8919</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-800 dark:text-slate-100">Apex Properties</span>
+<span class="text-[10px] text-slate-500 uppercase">Denver, CO</span>
+</div>
+</td>
+<td class="px-4 py-2.5">
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">Elevator B inspection due</p>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 flex items-center justify-center bg-slate-50 dark:bg-slate-900 rounded border border-dashed border-slate-300 dark:border-slate-700">
+<span class="text-[9px] font-bold text-slate-400">--</span>
+</div>
+<span class="text-xs italic text-slate-400 font-medium">Unassigned</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50 text-[10px] font-bold uppercase tracking-tight">
+                                Pending
+                            </span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+<span class="text-xs font-medium">Medium</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-right whitespace-nowrap">
+<span class="text-xs text-slate-500 font-medium">5h ago</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-4 py-2.5 text-center">
+<input class="rounded-sm border-slate-300 dark:border-slate-600 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="px-4 py-2.5">
+<span class="text-primary font-bold text-sm cursor-pointer hover:underline">#FSM-8915</span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-800 dark:text-slate-100">Omni Corp</span>
+<span class="text-[10px] text-slate-500 uppercase">Seattle, WA</span>
+</div>
+</td>
+<td class="px-4 py-2.5">
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">Network hub diagnostic required</p>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+<span class="text-[9px] font-bold text-slate-500">JS</span>
+</div>
+<span class="text-xs text-slate-700 dark:text-slate-200">Jordan Smith</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50 text-[10px] font-bold uppercase tracking-tight">
+                                In Progress
+                            </span>
+</td>
+<td class="px-4 py-2.5">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+<span class="text-xs font-medium">Medium</span>
+</div>
+</td>
+<td class="px-4 py-2.5 text-right whitespace-nowrap">
+<span class="text-xs text-slate-500 font-medium">6h ago</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<footer class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-6 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+<p>Results: <span class="font-bold text-slate-900 dark:text-slate-100">1 - 5</span> of <span class="font-bold text-slate-900 dark:text-slate-100">124</span></p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] uppercase">Rows:</span>
+<select class="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded py-0.5 px-1.5 text-[11px] focus:ring-primary focus:border-primary">
+<option>10</option>
+<option>25</option>
+<option>50</option>
+<option>100</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50" disabled="">
+<span class="material-icons text-base">chevron_left</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded bg-primary text-white font-bold text-xs">1</button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">2</button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">3</button>
+<span class="px-1 text-slate-400 text-[10px]">•••</span>
+<button class="w-7 h-7 flex items-center justify-center rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">13</button>
+<button class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-icons text-base">chevron_right</span>
+</button>
+</div>
+</footer>
+</div>
+</main>
+
+</body></html>

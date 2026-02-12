@@ -1,227 +1,282 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
-interface DashboardStats {
-    total: number;
-    readyToPlan: number;
-    released: number;
-    closed: number;
-    cancelled: number;
+interface DashboardData {
     date: string;
+    ticketsToday: { total: number; readyToPlan: number; released: number; closed: number; cancelled: number; };
+    ticketsWeek: { total: number; closed: number; cancelled: number; };
+    statusDistribution: { status: string; count: number; }[];
+    topEmpresas: { empresa: string; count: number; }[];
+    users: { total: number; active: number; rolesUsed: number; };
+    empresas: { total: number; propias: number; cas: number; active: number; };
+    trend: { date: string; total: number; closed: number; }[];
 }
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
     template: `
-    <div class="space-y-6 page-enter">
+    <div class="flex flex-col gap-4">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded border border-slate-200 shadow-sm">
         <div>
-          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Dashboard</h2>
-          <p class="text-slate-500 text-sm mt-1">Tickets programados para hoy: {{ stats().date | date:'fullDate' }}</p>
+          <h1 class="text-lg font-bold tracking-tight text-slate-800 uppercase">Dashboard</h1>
+          <p class="text-xs text-slate-400 mt-0.5">{{ data().date | date:'EEEE, dd MMMM yyyy' }} &middot; Actualizado: {{ lastUpdate }}</p>
         </div>
-        <div class="flex items-center gap-3">
-          <button (click)="loadStats()" class="btn btn-ghost p-2" [class.animate-spin]="loading()" title="Actualizar">
-            <i class="fas fa-sync-alt text-slate-500"></i>
-          </button>
-          <div class="flex items-center gap-2 text-sm bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="text-slate-600 font-medium">Actualizado: <span class="text-slate-800">{{ lastUpdate }}</span></span>
+        <button (click)="loadDashboard()"
+          class="px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 rounded border border-primary/20 flex items-center gap-1.5 transition-colors">
+          <span class="material-icons text-sm" [class.animate-spin]="loading()">autorenew</span>
+          Actualizar
+        </button>
+      </div>
+
+      <!-- KPI Cards Row 1: Tickets Hoy -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <span class="material-icons text-primary">confirmation_number</span>
+            </div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Hoy</span>
           </div>
+          <p class="text-2xl font-bold text-slate-800">{{ data().ticketsToday.total | number }}</p>
+          <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">Total Tickets</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+              <span class="material-icons text-orange-500">schedule</span>
+            </div>
+            <span class="text-[10px] font-bold text-orange-500">{{ getPct(data().ticketsToday.readyToPlan) }}%</span>
+          </div>
+          <p class="text-2xl font-bold text-orange-600">{{ data().ticketsToday.readyToPlan | number }}</p>
+          <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">Por Planificar</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+              <span class="material-icons text-blue-500">play_circle</span>
+            </div>
+            <span class="text-[10px] font-bold text-blue-500">{{ getPct(data().ticketsToday.released) }}%</span>
+          </div>
+          <p class="text-2xl font-bold text-blue-600">{{ data().ticketsToday.released | number }}</p>
+          <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">Liberados</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <span class="material-icons text-green-500">check_circle</span>
+            </div>
+            <span class="text-[10px] font-bold text-green-600">{{ getPct(data().ticketsToday.closed) }}%</span>
+          </div>
+          <p class="text-2xl font-bold text-green-600">{{ data().ticketsToday.closed | number }}</p>
+          <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">Cerrados</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+              <span class="material-icons text-red-400">cancel</span>
+            </div>
+            <span class="text-[10px] font-bold text-red-400">{{ getPct(data().ticketsToday.cancelled) }}%</span>
+          </div>
+          <p class="text-2xl font-bold text-red-500">{{ data().ticketsToday.cancelled | number }}</p>
+          <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">Cancelados</p>
         </div>
       </div>
 
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Total Tickets -->
-        <div class="card card-interactive p-5 group animate-fade-in stagger-1">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm font-medium text-slate-500 mb-1">Total Hoy</p>
-              @if (loading()) {
-                <div class="skeleton h-8 w-20"></div>
-              } @else {
-                <p class="text-3xl font-bold text-slate-800">{{ stats().total | number }}</p>
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Col 1-2: Charts -->
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- Status Bar Chart -->
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-primary text-base">bar_chart</span>
+                <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Distribución por Estado (Hoy)</h3>
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">{{ data().date | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="p-5 space-y-3">
+              @for (item of data().statusDistribution; track item.status) {
+                <div class="flex items-center gap-3">
+                  <div class="w-28 text-xs text-slate-600 font-medium truncate" [title]="item.status">{{ item.status }}</div>
+                  <div class="flex-1 h-7 bg-slate-100 rounded overflow-hidden">
+                    <div class="h-full rounded transition-all duration-700 ease-out"
+                      [ngClass]="getStatusBarColor(item.status)"
+                      [style.width.%]="getStatusPct(item.count)">
+                    </div>
+                  </div>
+                  <div class="w-12 text-right text-xs font-bold text-slate-700">{{ item.count }}</div>
+                </div>
               }
-              <div class="flex items-center gap-1 mt-2">
-                <span class="text-blue-600 text-xs font-semibold flex items-center gap-0.5">
-                  <i class="fas fa-calendar-day text-[10px]"></i> Fecha visita hoy
+              @if (data().statusDistribution.length === 0 && !loading()) {
+                <p class="text-center text-sm text-slate-400 py-8">Sin tickets hoy</p>
+              }
+            </div>
+          </div>
+
+          <!-- Trend: últimos 7 días -->
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+              <span class="material-icons text-primary text-base">trending_up</span>
+              <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Tendencia Últimos 7 Días</h3>
+            </div>
+            <div class="p-5">
+              <!-- Mini bar chart -->
+              <div class="flex items-end gap-2 h-32">
+                @for (day of data().trend; track day.date) {
+                  <div class="flex-1 flex flex-col items-center gap-1">
+                    <span class="text-[9px] font-bold text-slate-600">{{ day.total }}</span>
+                    <div class="w-full flex flex-col gap-0.5" style="height: 100px">
+                      <div class="w-full bg-green-400 rounded-t transition-all duration-500"
+                        [style.height.px]="getTrendBarHeight(day.closed, day.total)"></div>
+                      <div class="w-full bg-primary/70 rounded-b transition-all duration-500 flex-1"
+                        [style.height.px]="getTrendBarHeight(day.total - day.closed, day.total)"></div>
+                    </div>
+                    <span class="text-[9px] text-slate-400">{{ day.date | date:'EEE' }}</span>
+                  </div>
+                }
+              </div>
+              <div class="flex items-center justify-center gap-5 mt-3 pt-3 border-t border-slate-100">
+                <span class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <span class="w-3 h-2 rounded bg-primary/70"></span> Total
+                </span>
+                <span class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                  <span class="w-3 h-2 rounded bg-green-400"></span> Cerrados
                 </span>
               </div>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
-              <i class="fas fa-ticket-alt text-white text-lg"></i>
-            </div>
           </div>
         </div>
 
-        <!-- Ready to Plan -->
-        <div class="card card-interactive p-5 group animate-fade-in stagger-2">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm font-medium text-slate-500 mb-1">Por Planificar</p>
-              @if (loading()) {
-                <div class="skeleton h-8 w-16"></div>
-              } @else {
-                <p class="text-3xl font-bold text-orange-600">{{ stats().readyToPlan | number }}</p>
+        <!-- Col 3: Side panels -->
+        <div class="space-y-4">
+
+          <!-- Tasa de cierre -->
+          <div class="bg-white border border-slate-200 rounded-lg p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Tasa de Cierre</h3>
+              <span class="text-2xl font-bold" [ngClass]="closeRate() >= 70 ? 'text-green-600' : closeRate() >= 40 ? 'text-orange-500' : 'text-red-500'">
+                {{ closeRate() }}%
+              </span>
+            </div>
+            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-700"
+                [ngClass]="closeRate() >= 70 ? 'bg-green-500' : closeRate() >= 40 ? 'bg-orange-400' : 'bg-red-400'"
+                [style.width.%]="closeRate()"></div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2">Tickets cerrados del total de hoy</p>
+          </div>
+
+          <!-- Semana -->
+          <div class="bg-white border border-slate-200 rounded-lg p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="material-icons text-primary text-base">date_range</span>
+              <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Resumen Semanal</h3>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="text-center p-2 bg-slate-50 rounded-lg">
+                <p class="text-lg font-bold text-slate-800">{{ data().ticketsWeek.total | number }}</p>
+                <p class="text-[10px] text-slate-400 uppercase font-bold">Total</p>
+              </div>
+              <div class="text-center p-2 bg-green-50 rounded-lg">
+                <p class="text-lg font-bold text-green-600">{{ data().ticketsWeek.closed | number }}</p>
+                <p class="text-[10px] text-slate-400 uppercase font-bold">Cerrados</p>
+              </div>
+              <div class="text-center p-2 bg-red-50 rounded-lg">
+                <p class="text-lg font-bold text-red-500">{{ data().ticketsWeek.cancelled | number }}</p>
+                <p class="text-[10px] text-slate-400 uppercase font-bold">Cancelados</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Empresas -->
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+              <span class="material-icons text-primary text-base">business</span>
+              <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Top Empresas Hoy</h3>
+            </div>
+            <div class="divide-y divide-slate-100">
+              @for (emp of data().topEmpresas; track emp.empresa; let i = $index) {
+                <div class="px-4 py-2.5 flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                    <span class="text-xs text-slate-700 font-medium truncate max-w-[140px]">{{ emp.empresa }}</span>
+                  </div>
+                  <span class="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">{{ emp.count }}</span>
+                </div>
               }
-              <div class="flex items-center gap-1 mt-2">
-                <span class="text-orange-600 text-xs font-semibold">Requieren atención</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform">
-              <i class="fas fa-clock text-white text-lg"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- En Progreso -->
-        <div class="card card-interactive p-5 group animate-fade-in stagger-3">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm font-medium text-slate-500 mb-1">Liberados</p>
-              @if (loading()) {
-                <div class="skeleton h-8 w-16"></div>
-              } @else {
-                <p class="text-3xl font-bold text-blue-600">{{ stats().released | number }}</p>
+              @if (data().topEmpresas.length === 0) {
+                <p class="text-center text-xs text-slate-400 py-6">Sin datos</p>
               }
-              <div class="flex items-center gap-1 mt-2">
-                <span class="text-blue-600 text-xs font-semibold flex items-center gap-0.5">
-                  <i class="fas fa-play text-[10px]"></i> En ejecución
-                </span>
-              </div>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
-              <i class="fas fa-spinner text-white text-lg"></i>
             </div>
           </div>
-        </div>
 
-        <!-- Completados -->
-        <div class="card card-interactive p-5 group animate-fade-in stagger-4">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm font-medium text-slate-500 mb-1">Cerrados</p>
-              @if (loading()) {
-                <div class="skeleton h-8 w-16"></div>
-              } @else {
-                <p class="text-3xl font-bold text-emerald-600">{{ stats().closed | number }}</p>
-              }
-              <div class="flex items-center gap-1 mt-2">
-                <span class="text-emerald-600 text-xs font-semibold flex items-center gap-0.5">
-                  <i class="fas fa-check text-[10px]"></i> Completados
-                </span>
+          <!-- Users & Empresas quick stats -->
+          <div class="grid grid-cols-2 gap-3">
+            <a routerLink="/users" class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group">
+              <div class="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <span class="material-icons text-purple-500 text-lg">people</span>
               </div>
-            </div>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
-              <i class="fas fa-check-circle text-white text-lg"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Chart Principal -->
-        <div class="lg:col-span-2 card p-6 animate-fade-in stagger-5">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-bold text-slate-800">Tickets por Estado (Hoy)</h3>
-            <span class="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-medium">
-              {{ stats().date | date:'dd/MM/yyyy' }}
-            </span>
-          </div>
-          
-          <!-- Simple Visual Chart Representation -->
-          <div class="space-y-4">
-            <div class="flex items-center gap-4">
-              <div class="w-24 text-sm text-slate-600 font-medium">Por planificar</div>
-              <div class="flex-1 h-8 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-1000 ease-out" 
-                     [style.width.%]="getPercentage(stats().readyToPlan)"></div>
-              </div>
-              <div class="w-16 text-right text-sm font-bold text-slate-700">{{ stats().readyToPlan | number }}</div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="w-24 text-sm text-slate-600 font-medium">Liberados</div>
-              <div class="flex-1 h-8 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-1000 ease-out" 
-                     [style.width.%]="getPercentage(stats().released)"></div>
-              </div>
-              <div class="w-16 text-right text-sm font-bold text-slate-700">{{ stats().released | number }}</div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="w-24 text-sm text-slate-600 font-medium">Cerrados</div>
-              <div class="flex-1 h-8 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out" 
-                     [style.width.%]="getPercentage(stats().closed)"></div>
-              </div>
-              <div class="w-16 text-right text-sm font-bold text-slate-700">{{ stats().closed | number }}</div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="w-24 text-sm text-slate-600 font-medium">Cancelados</div>
-              <div class="flex-1 h-8 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-slate-400 to-slate-500 rounded-full transition-all duration-1000 ease-out" 
-                     [style.width.%]="getPercentage(stats().cancelled)"></div>
-              </div>
-              <div class="w-16 text-right text-sm font-bold text-slate-700">{{ stats().cancelled | number }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="card p-6 animate-fade-in stagger-6">
-          <h3 class="text-lg font-bold text-slate-800 mb-4">Acciones Rápidas</h3>
-          
-          <div class="space-y-3">
-            <a href="/tickets" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-              <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                <i class="fas fa-plus text-blue-600 group-hover:text-white transition-colors"></i>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-slate-700">Nuevo Ticket</p>
-                <p class="text-xs text-slate-400">Crear orden de servicio</p>
-              </div>
-              <i class="fas fa-chevron-right text-slate-300 ml-auto group-hover:translate-x-1 transition-transform"></i>
+              <p class="text-xl font-bold text-slate-800">{{ data().users.active }}</p>
+              <p class="text-[10px] text-slate-400 uppercase font-bold">Usuarios Activos</p>
+              <p class="text-[10px] text-slate-400">de {{ data().users.total }} total</p>
             </a>
-
-            <a href="/tickets" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-              <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center group-hover:bg-orange-500 transition-colors">
-                <i class="fas fa-list text-orange-600 group-hover:text-white transition-colors"></i>
+            <a routerLink="/empresas" class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group">
+              <div class="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <span class="material-icons text-teal-500 text-lg">business</span>
               </div>
-              <div>
-                <p class="text-sm font-semibold text-slate-700">Ver Pendientes</p>
-                <p class="text-xs text-slate-400">{{ stats().readyToPlan | number }} tickets por planificar</p>
-              </div>
-              <i class="fas fa-chevron-right text-slate-300 ml-auto group-hover:translate-x-1 transition-transform"></i>
+              <p class="text-xl font-bold text-slate-800">{{ data().empresas.active }}</p>
+              <p class="text-[10px] text-slate-400 uppercase font-bold">Empresas Activas</p>
+              <p class="text-[10px] text-slate-400">{{ data().empresas.propias }} propias · {{ data().empresas.cas }} CAS</p>
             </a>
-
-            <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-              <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                <i class="fas fa-chart-line text-emerald-600 group-hover:text-white transition-colors"></i>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-slate-700">Reportes</p>
-                <p class="text-xs text-slate-400">Análisis y estadísticas</p>
-              </div>
-              <i class="fas fa-chevron-right text-slate-300 ml-auto group-hover:translate-x-1 transition-transform"></i>
-            </div>
           </div>
 
-          <!-- Performance Indicator -->
-          <div class="mt-6 p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-slate-600">Tasa de Cierre</span>
-              <span class="text-lg font-bold text-emerald-600">{{ getCloseRate() }}%</span>
+          <!-- Quick Actions -->
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+              <span class="material-icons text-primary text-base">bolt</span>
+              <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Acciones Rápidas</h3>
             </div>
-            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000" 
-                   [style.width.%]="getCloseRate()"></div>
+            <div class="p-3 space-y-1">
+              <a routerLink="/tickets" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors group">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                  <span class="material-icons text-primary text-sm group-hover:text-white">list_alt</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs font-semibold text-slate-700">Ver Tickets</p>
+                  <p class="text-[10px] text-slate-400">Lista completa de tickets</p>
+                </div>
+                <span class="material-icons text-slate-300 text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+              </a>
+              <a routerLink="/users" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors group">
+                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                  <span class="material-icons text-purple-500 text-sm group-hover:text-white">person_add</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs font-semibold text-slate-700">Gestionar Usuarios</p>
+                  <p class="text-[10px] text-slate-400">{{ data().users.total }} registrados</p>
+                </div>
+                <span class="material-icons text-slate-300 text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+              </a>
+              <a routerLink="/users/roles" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors group">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center group-hover:bg-amber-500 transition-colors">
+                  <span class="material-icons text-amber-500 text-sm group-hover:text-white">shield</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs font-semibold text-slate-700">Roles y Permisos</p>
+                  <p class="text-[10px] text-slate-400">{{ data().users.rolesUsed }} roles en uso</p>
+                </div>
+                <span class="material-icons text-slate-300 text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+              </a>
             </div>
-            <p class="text-xs text-slate-400 mt-2">Tickets cerrados del total de hoy</p>
           </div>
         </div>
       </div>
@@ -230,48 +285,66 @@ interface DashboardStats {
 })
 export class DashboardComponent implements OnInit {
     private http = inject(HttpClient);
-    private apiUrl = environment.apiUrl;
-    
-    loading = signal(true);
+
+    loading = signal(false);
     lastUpdate = '';
-    stats = signal<DashboardStats>({
-        total: 0,
-        readyToPlan: 0,
-        released: 0,
-        closed: 0,
-        cancelled: 0,
-        date: new Date().toISOString().split('T')[0]
+    data = signal<DashboardData>({
+        date: new Date().toISOString().split('T')[0],
+        ticketsToday: { total: 0, readyToPlan: 0, released: 0, closed: 0, cancelled: 0 },
+        ticketsWeek: { total: 0, closed: 0, cancelled: 0 },
+        statusDistribution: [],
+        topEmpresas: [],
+        users: { total: 0, active: 0, rolesUsed: 0 },
+        empresas: { total: 0, propias: 0, cas: 0, active: 0 },
+        trend: []
+    });
+
+    closeRate = computed(() => {
+        const t = this.data().ticketsToday;
+        return t.total === 0 ? 0 : Math.round((t.closed / t.total) * 100);
     });
 
     ngOnInit() {
-        this.loadStats();
+        this.loadDashboard();
     }
 
-    loadStats() {
+    loadDashboard() {
         this.loading.set(true);
-        
-        this.http.get<DashboardStats>(`${this.apiUrl}/tickets/stats`).subscribe({
-            next: (data) => {
-                this.stats.set(data);
+        this.http.get<DashboardData>(`${environment.apiUrl}/dashboard`).subscribe({
+            next: (d) => {
+                this.data.set(d);
                 this.lastUpdate = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
                 this.loading.set(false);
             },
-            error: (err) => {
-                console.error('Error loading stats:', err);
-                this.loading.set(false);
-            }
+            error: () => this.loading.set(false)
         });
     }
 
-    getPercentage(value: number): number {
-        const total = this.stats().total;
-        if (total === 0) return 0;
-        return Math.round((value / total) * 100);
+    getPct(value: number): number {
+        const total = this.data().ticketsToday.total;
+        return total === 0 ? 0 : Math.round((value / total) * 100);
     }
 
-    getCloseRate(): number {
-        const total = this.stats().total;
-        if (total === 0) return 0;
-        return Math.round((this.stats().closed / total) * 100);
+    getStatusPct(count: number): number {
+        const max = Math.max(...this.data().statusDistribution.map(s => s.count), 1);
+        return Math.round((count / max) * 100);
+    }
+
+    getStatusBarColor(status: string): string {
+        const colors: Record<string, string> = {
+            'Ready to plan': 'bg-orange-400',
+            'Released': 'bg-blue-400',
+            'Closed': 'bg-green-500',
+            'Cancelled': 'bg-red-400',
+            'Rechazado por service': 'bg-slate-400',
+            'Reprogramado': 'bg-amber-400'
+        };
+        return colors[status] || 'bg-slate-300';
+    }
+
+    getTrendBarHeight(value: number, max: number): number {
+        if (max === 0) return 2;
+        const maxAll = Math.max(...this.data().trend.map(d => d.total), 1);
+        return Math.max(2, Math.round((value / maxAll) * 90));
     }
 }

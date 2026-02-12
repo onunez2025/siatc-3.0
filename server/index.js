@@ -109,117 +109,365 @@ app.get('/api/materials', async (req, res) => {
     }
 });
 
-// Endpoint: Obtener Usuarios
+// Endpoint: Obtener Usuarios (SIATC schema)
 app.get('/api/users', async (req, res) => {
     try {
+        const { search, role, page = 1, limit = 20, sortBy, sortDir } = req.query;
         const pool = await getConnection();
-        const result = await pool.request().query(`
+        const request = pool.request();
+
+        let where = ' WHERE 1=1 ';
+        if (search) {
+            request.input('search', sql.NVarChar, `%${search}%`);
+            where += ` AND (U.Username LIKE @search OR U.Nombre LIKE @search OR U.Apellido LIKE @search OR U.Email LIKE @search)`;
+        }
+        if (role) {
+            request.input('role', sql.Int, parseInt(role));
+            where += ` AND U.IdRol = @role`;
+        }
+
+        // Count
+        const countReq = pool.request();
+        if (search) countReq.input('search', sql.NVarChar, `%${search}%`);
+        if (role) countReq.input('role', sql.Int, parseInt(role));
+        const countResult = await countReq.query(`
+            SELECT COUNT(*) as total
+            FROM [SIATC].[Usuarios] U
+            ${where}
+        `);
+        const total = countResult.recordset[0].total;
+
+        // Sort
+        const sortWhitelist = ['username', 'name', 'role', 'email', 'lastLogin', 'active'];
+        let orderBy = 'U.Nombre ASC';
+        if (sortBy && sortWhitelist.includes(sortBy)) {
+            const dir = sortDir === 'desc' ? 'DESC' : 'ASC';
+            const colMap = { username: 'U.Username', name: 'U.Nombre', role: 'R.NombreRol', email: 'U.Email', lastLogin: 'U.UltimoLogin', active: 'U.Activo' };
+            orderBy = `${colMap[sortBy] || 'U.Nombre'} ${dir}`;
+        }
+
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        request.input('offset', sql.Int, offset);
+        request.input('limit', sql.Int, parseInt(limit));
+
+        const result = await request.query(`
             SELECT 
-                U.[ID Usuario] as username,
+                U.IdUsuario as id,
+                U.Username as username,
+                U.Nombre as firstName,
+                U.Apellido as lastName,
                 U.Nombre + ' ' + U.Apellido as name,
-                UT.[Tipo de Usuario] as dbRole,
-                U.Correo as email,
-                U.LastLogin as lastLogin
-            FROM [dbo].[GAC_APP_TB_USUARIOS] U
-            LEFT JOIN [dbo].[GAC_APP_TB_USUARIOS_TIPO] UT ON U.Tipo = UT.[ID Tipo de Usuario]
+                R.NombreRol as roleName,
+                R.IdRol as roleId,
+                R.Descripcion as roleDesc,
+                U.Email as email,
+                U.IdEmpresa as empresaId,
+                E.NombreEmpresa as empresaName,
+                U.CodigoTecnico as codigoTecnico,
+                U.Activo as active,
+                U.UltimoLogin as lastLogin,
+                U.FechaCreacion as createdAt
+            FROM [SIATC].[Usuarios] U
+            LEFT JOIN [SIATC].[Roles] R ON U.IdRol = R.IdRol
+            LEFT JOIN [SIATC].[Empresas] E ON U.IdEmpresa = E.IdEmpresa
+            ${where}
+            ORDER BY ${orderBy}
+            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
         `);
 
-        // Map DB roles to Frontend roles
-        const users = result.recordset.map(u => {
-            let role = 'OPERADOR'; // Default
-            const dbRole = (u.dbRole || '').toUpperCase();
+        const users = result.recordset.map(u => ({
+            id: u.id,
+            username: u.username,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            name: u.name,
+            roleId: u.roleId,
+            roleName: u.roleName,
+            roleDesc: u.roleDesc,
+            email: u.email,
+            empresaId: u.empresaId,
+            empresaName: u.empresaName,
+            codigoTecnico: u.codigoTecnico,
+            active: u.active,
+            lastLogin: u.lastLogin || null,
+            createdAt: u.createdAt || null
+        }));
 
-            if (dbRole.includes('ADMINISTRADOR')) {
-                role = 'ADMIN';
-            } else if (dbRole.includes('TECNICO') || dbRole.includes('CHOFER')) {
-                role = 'TECNICO';
-            } else if (dbRole.includes('SUPERVISOR') || dbRole.includes('ASISTENTE')) {
-                role = 'OPERADOR';
+        res.json({
+            data: users,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
             }
-
-            return {
-                id: u.username,
-                username: u.username,
-                name: u.name,
-                role: role,
-                originalRole: u.dbRole, // Keep original for reference
-                email: u.email,
-                lastLogin: u.lastLogin || '-'
-            };
         });
-
-        res.json(users);
     } catch (err) {
         console.error(err);
+        res.status(500).json({ error: 'Error fetching users' });
     }
 });
 
-// Endpoint: Obtener Tipos de Usuario
-app.get('/api/user-types', async (req, res) => {
+// Endpoint: Obtener Roles (SIATC schema)
+app.get('/api/roles', async (req, res) => {
     try {
         const pool = await getConnection();
+        const includeInactive = req.query.all === 'true';
+        const whereClause = includeInactive ? '' : 'WHERE Activo = 1';
         const result = await pool.request().query(`
-            SELECT 
-                [ID Tipo de Usuario] as id,
-                [Tipo de Usuario] as name
-            FROM [dbo].[GAC_APP_TB_USUARIOS_TIPO]
+            SELECT IdRol as id, NombreRol as name, Descripcion as description, Activo as active, FechaCreacion as createdAt
+            FROM [SIATC].[Roles]
+            ${whereClause}
+            ORDER BY IdRol
         `);
         res.json(result.recordset);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error fetching user types' });
+        res.status(500).json({ error: 'Error fetching roles' });
     }
 });
 
-// Endpoint: Actualizar Usuario
+// Endpoint: Crear Rol
+app.post('/api/roles', async (req, res) => {
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nombre de rol requerido' });
+    try {
+        const pool = await getConnection();
+        const existing = await pool.request()
+            .input('name', sql.NVarChar, name.toUpperCase())
+            .query('SELECT IdRol FROM [SIATC].[Roles] WHERE NombreRol = @name');
+        if (existing.recordset.length > 0) return res.status(409).json({ error: 'El rol ya existe' });
+
+        await pool.request()
+            .input('name', sql.NVarChar, name.toUpperCase())
+            .input('desc', sql.NVarChar, description || '')
+            .query(`INSERT INTO [SIATC].[Roles] (NombreRol, Descripcion, Activo, FechaCreacion) VALUES (@name, @desc, 1, GETDATE())`);
+        res.status(201).json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error creating role' });
+    }
+});
+
+// Endpoint: Actualizar Rol
+app.put('/api/roles/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, description, active } = req.body;
+    try {
+        const pool = await getConnection();
+        let setClauses = [];
+        const request = pool.request().input('id', sql.Int, parseInt(id));
+        if (name !== undefined) { setClauses.push('NombreRol = @name'); request.input('name', sql.NVarChar, name.toUpperCase()); }
+        if (description !== undefined) { setClauses.push('Descripcion = @desc'); request.input('desc', sql.NVarChar, description); }
+        if (active !== undefined) { setClauses.push('Activo = @active'); request.input('active', sql.Bit, active ? 1 : 0); }
+        if (setClauses.length === 0) return res.status(400).json({ error: 'No fields to update' });
+        await request.query(`UPDATE [SIATC].[Roles] SET ${setClauses.join(', ')} WHERE IdRol = @id`);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error updating role' });
+    }
+});
+
+// Endpoint: Eliminar Rol
+app.delete('/api/roles/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pool = await getConnection();
+        // Check if role is in use
+        const inUse = await pool.request()
+            .input('id', sql.Int, parseInt(id))
+            .query('SELECT COUNT(*) as count FROM [SIATC].[Usuarios] WHERE IdRol = @id');
+        if (inUse.recordset[0].count > 0) {
+            return res.status(409).json({ error: `No se puede eliminar: ${inUse.recordset[0].count} usuario(s) tienen este rol asignado` });
+        }
+        await pool.request().input('id', sql.Int, parseInt(id)).query('DELETE FROM [SIATC].[Roles] WHERE IdRol = @id');
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error deleting role' });
+    }
+});
+
+// Endpoint: Obtener Empresas (SIATC schema)
+app.get('/api/empresas', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const includeInactive = req.query.all === 'true';
+        const whereClause = includeInactive ? '' : 'WHERE E.Activo = 1';
+        const result = await pool.request().query(`
+            SELECT E.IdEmpresa as id, E.NombreEmpresa as name, E.TipoEmpresa as type,
+                   E.Activo as active, E.CodigoFSM as codigoFSM,
+                   E.FechaCreacion as createdAt, E.FechaModificacion as updatedAt,
+                   (SELECT COUNT(*) FROM [SIATC].[Usuarios] U WHERE U.IdEmpresa = E.IdEmpresa) as userCount
+            FROM [SIATC].[Empresas] E
+            ${whereClause}
+            ORDER BY E.NombreEmpresa
+        `);
+        res.json(result.recordset);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error fetching empresas' });
+    }
+});
+
+// Endpoint: Crear Empresa
+app.post('/api/empresas', async (req, res) => {
+    const { name, type, codigoFSM, active } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nombre de empresa requerido' });
+
+    try {
+        const pool = await getConnection();
+        // Check duplicate
+        const dup = await pool.request()
+            .input('name', sql.NVarChar, name.trim())
+            .query('SELECT IdEmpresa FROM [SIATC].[Empresas] WHERE NombreEmpresa = @name');
+        if (dup.recordset.length > 0) return res.status(409).json({ error: 'La empresa ya existe' });
+
+        const result = await pool.request()
+            .input('name', sql.NVarChar, name.trim())
+            .input('type', sql.NVarChar, (type || 'CAS').toUpperCase())
+            .input('codigoFSM', sql.NVarChar, codigoFSM || null)
+            .input('active', sql.Bit, active !== undefined ? active : true)
+            .query(`INSERT INTO [SIATC].[Empresas] (NombreEmpresa, TipoEmpresa, CodigoFSM, Activo, FechaCreacion, FechaModificacion)
+                    OUTPUT INSERTED.IdEmpresa as id
+                    VALUES (@name, @type, @codigoFSM, @active, GETDATE(), GETDATE())`);
+        res.status(201).json({ id: result.recordset[0].id, message: 'Empresa creada' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error creating empresa' });
+    }
+});
+
+// Endpoint: Actualizar Empresa
+app.put('/api/empresas/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, type, codigoFSM, active } = req.body;
+
+    try {
+        const pool = await getConnection();
+        let setClauses = [];
+        const request = pool.request().input('id', sql.Int, parseInt(id));
+
+        if (name !== undefined) { setClauses.push('NombreEmpresa = @name'); request.input('name', sql.NVarChar, name.trim()); }
+        if (type !== undefined) { setClauses.push('TipoEmpresa = @type'); request.input('type', sql.NVarChar, type.toUpperCase()); }
+        if (codigoFSM !== undefined) { setClauses.push('CodigoFSM = @codigoFSM'); request.input('codigoFSM', sql.NVarChar, codigoFSM); }
+        if (active !== undefined) { setClauses.push('Activo = @active'); request.input('active', sql.Bit, active); }
+
+        if (setClauses.length === 0) return res.status(400).json({ error: 'No fields to update' });
+
+        setClauses.push('FechaModificacion = GETDATE()');
+        await request.query(`UPDATE [SIATC].[Empresas] SET ${setClauses.join(', ')} WHERE IdEmpresa = @id`);
+        res.json({ message: 'Empresa actualizada' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error updating empresa' });
+    }
+});
+
+// Endpoint: Eliminar Empresa
+app.delete('/api/empresas/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pool = await getConnection();
+        // Check if empresa has users
+        const usersCheck = await pool.request()
+            .input('id', sql.Int, parseInt(id))
+            .query('SELECT COUNT(*) as count FROM [SIATC].[Usuarios] WHERE IdEmpresa = @id');
+        if (usersCheck.recordset[0].count > 0) {
+            return res.status(409).json({ error: `No se puede eliminar: ${usersCheck.recordset[0].count} usuario(s) pertenecen a esta empresa` });
+        }
+        await pool.request().input('id', sql.Int, parseInt(id)).query('DELETE FROM [SIATC].[Empresas] WHERE IdEmpresa = @id');
+        res.json({ message: 'Empresa eliminada' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error deleting empresa' });
+    }
+});
+
+// Endpoint: Actualizar Usuario (SIATC schema)
 app.put('/api/users/:id', async (req, res) => {
-    const { id } = req.params; // This is the username/ID
-    const { name, email, typeId, password } = req.body;
+    const { id } = req.params;
+    const { firstName, lastName, email, roleId, empresaId, codigoTecnico, active, password } = req.body;
 
     try {
         const pool = await getConnection();
 
-        // Basic update query
-        let query = `
-            UPDATE [dbo].[GAC_APP_TB_USUARIOS]
-            SET 
-                Correo = @email,
-                Tipo = @typeId
-        `;
+        let setClauses = [];
+        const request = pool.request().input('id', sql.Int, parseInt(id));
 
-        if (password && password.trim() !== '') {
-            query += `, Contraseña = @password`;
+        if (firstName !== undefined) { setClauses.push('Nombre = @firstName'); request.input('firstName', sql.NVarChar, firstName); }
+        if (lastName !== undefined) { setClauses.push('Apellido = @lastName'); request.input('lastName', sql.NVarChar, lastName); }
+        if (email !== undefined) { setClauses.push('Email = @email'); request.input('email', sql.NVarChar, email); }
+        if (roleId !== undefined) { setClauses.push('IdRol = @roleId'); request.input('roleId', sql.Int, parseInt(roleId)); }
+        if (empresaId !== undefined) { setClauses.push('IdEmpresa = @empresaId'); request.input('empresaId', sql.Int, parseInt(empresaId)); }
+        if (codigoTecnico !== undefined) { setClauses.push('CodigoTecnico = @codigoTecnico'); request.input('codigoTecnico', sql.NVarChar, codigoTecnico); }
+        if (active !== undefined) { setClauses.push('Activo = @active'); request.input('active', sql.Bit, active ? 1 : 0); }
+        if (password && password.trim() !== '') { setClauses.push('Password = @password'); request.input('password', sql.NVarChar, password); }
+        setClauses.push('FechaModificacion = GETDATE()');
+
+        if (setClauses.length === 1) {
+            return res.status(400).json({ error: 'No fields to update' });
         }
 
-        // Handle name splitting
-        const nameParts = name ? name.split(' ') : ['', ''];
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || '';
-
-        query += `, Nombre = @firstName, Apellido = @lastName`;
-        query += ` WHERE [ID Usuario] = @id`;
-
-        const request = pool.request()
-            .input('id', sql.NVarChar, id)
-            .input('email', sql.NVarChar, email)
-            .input('typeId', sql.NVarChar, typeId)
-            .input('firstName', sql.NVarChar, firstName)
-            .input('lastName', sql.NVarChar, lastName);
-
-        if (password && password.trim() !== '') {
-            request.input('password', sql.NVarChar, password);
-        }
-
-        await request.query(query);
-
+        await request.query(`UPDATE [SIATC].[Usuarios] SET ${setClauses.join(', ')} WHERE IdUsuario = @id`);
         res.json({ success: true, message: 'User updated' });
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error updating user' });
     }
 });
 
+// Endpoint: Crear Usuario (SIATC schema)
+app.post('/api/users', async (req, res) => {
+    const { username, firstName, lastName, email, roleId, empresaId, codigoTecnico, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username y contraseña son requeridos' });
+    }
+    try {
+        const pool = await getConnection();
+        const existing = await pool.request()
+            .input('username', sql.NVarChar, username)
+            .query('SELECT IdUsuario FROM [SIATC].[Usuarios] WHERE Username = @username');
+        if (existing.recordset.length > 0) {
+            return res.status(409).json({ error: 'El usuario ya existe' });
+        }
+
+        await pool.request()
+            .input('username', sql.NVarChar, username)
+            .input('firstName', sql.NVarChar, firstName || '')
+            .input('lastName', sql.NVarChar, lastName || '')
+            .input('email', sql.NVarChar, email || '')
+            .input('roleId', sql.Int, parseInt(roleId) || 7)
+            .input('empresaId', sql.Int, parseInt(empresaId) || 1)
+            .input('codigoTecnico', sql.NVarChar, codigoTecnico || null)
+            .input('password', sql.NVarChar, password)
+            .query(`
+                INSERT INTO [SIATC].[Usuarios] (Username, Password, Nombre, Apellido, Email, IdEmpresa, IdRol, CodigoTecnico, Activo, RequiereCambioPassword, FechaCreacion)
+                VALUES (@username, @password, @firstName, @lastName, @email, @empresaId, @roleId, @codigoTecnico, 1, 1, GETDATE())
+            `);
+
+        res.status(201).json({ success: true, message: 'User created' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error creating user' });
+    }
+});
+
+// Endpoint: Eliminar Usuario (SIATC schema)
+app.delete('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pool = await getConnection();
+        await pool.request()
+            .input('id', sql.Int, parseInt(id))
+            .query('DELETE FROM [SIATC].[Usuarios] WHERE IdUsuario = @id');
+        res.json({ success: true, message: 'User deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error deleting user' });
+    }
+});
 
 
 // Endpoint: Obtener Servicios (ActivityTypes)
@@ -444,6 +692,111 @@ app.get('/api/tickets/stats', async (req, res) => {
     }
 });
 
+// Endpoint: Dashboard KPIs completo
+app.get('/api/dashboard', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        const [ticketToday, ticketWeek, ticketByStatus, ticketByEmpresa, userStats, empresaStats, ticketTrend] = await Promise.all([
+            // 1. Tickets de hoy por estado
+            pool.request().input('today', sql.Date, todayStr).query(`
+                SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Estado = 'Ready to plan' THEN 1 ELSE 0 END) as readyToPlan,
+                    SUM(CASE WHEN Estado = 'Released' THEN 1 ELSE 0 END) as released,
+                    SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed,
+                    SUM(CASE WHEN Estado = 'Cancelled' THEN 1 ELSE 0 END) as cancelled
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) = @today
+            `),
+            // 2. Tickets últimos 7 días
+            pool.request().query(`
+                SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed,
+                    SUM(CASE WHEN Estado = 'Cancelled' THEN 1 ELSE 0 END) as cancelled
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) >= CAST(DATEADD(DAY, -7, GETDATE()) AS DATE)
+            `),
+            // 3. Distribución por estado (todos)
+            pool.request().input('today', sql.Date, todayStr).query(`
+                SELECT Estado as status, COUNT(*) as count
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) = @today
+                GROUP BY Estado
+                ORDER BY count DESC
+            `),
+            // 4. Top 5 empresas con más tickets hoy
+            pool.request().input('today', sql.Date, todayStr).query(`
+                SELECT TOP 5 IDEmpresa as empresa, COUNT(*) as count
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) = @today AND IDEmpresa IS NOT NULL AND IDEmpresa != ''
+                GROUP BY IDEmpresa
+                ORDER BY count DESC
+            `),
+            // 5. Stats de usuarios
+            pool.request().query(`
+                SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Activo = 1 THEN 1 ELSE 0 END) as active,
+                    (SELECT COUNT(DISTINCT IdRol) FROM [SIATC].[Usuarios]) as rolesUsed
+                FROM [SIATC].[Usuarios]
+            `),
+            // 6. Stats de empresas
+            pool.request().query(`
+                SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN TipoEmpresa = 'PROPIA' THEN 1 ELSE 0 END) as propias,
+                    SUM(CASE WHEN TipoEmpresa = 'CAS' THEN 1 ELSE 0 END) as cas,
+                    SUM(CASE WHEN Activo = 1 THEN 1 ELSE 0 END) as active
+                FROM [SIATC].[Empresas]
+            `),
+            // 7. Tendencia últimos 7 días
+            pool.request().query(`
+                SELECT
+                    CAST(FechaVisita AS DATE) as date,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) >= CAST(DATEADD(DAY, -6, GETDATE()) AS DATE)
+                    AND CAST(FechaVisita AS DATE) <= CAST(GETDATE() AS DATE)
+                GROUP BY CAST(FechaVisita AS DATE)
+                ORDER BY date ASC
+            `)
+        ]);
+
+        const today = ticketToday.recordset[0];
+        const week = ticketWeek.recordset[0];
+        const users = userStats.recordset[0];
+        const empresas = empresaStats.recordset[0];
+
+        res.json({
+            date: todayStr,
+            ticketsToday: {
+                total: today.total || 0,
+                readyToPlan: today.readyToPlan || 0,
+                released: today.released || 0,
+                closed: today.closed || 0,
+                cancelled: today.cancelled || 0
+            },
+            ticketsWeek: {
+                total: week.total || 0,
+                closed: week.closed || 0,
+                cancelled: week.cancelled || 0
+            },
+            statusDistribution: ticketByStatus.recordset.map(r => ({ status: r.status, count: r.count })),
+            topEmpresas: ticketByEmpresa.recordset.map(r => ({ empresa: r.empresa, count: r.count })),
+            users: { total: users.total || 0, active: users.active || 0, rolesUsed: users.rolesUsed || 0 },
+            empresas: { total: empresas.total || 0, propias: empresas.propias || 0, cas: empresas.cas || 0, active: empresas.active || 0 },
+            trend: ticketTrend.recordset.map(r => ({ date: r.date, total: r.total, closed: r.closed }))
+        });
+    } catch (err) {
+        console.error('Error in /api/dashboard:', err);
+        res.status(500).json({ error: 'Error fetching dashboard data' });
+    }
+});
+
 // Helper: Formatear Ticket desde el objeto de la base de datos
 app.get('/api/tickets', async (req, res) => {
     try {
@@ -453,6 +806,15 @@ app.get('/api/tickets', async (req, res) => {
         const status = req.query.status;
         const search = req.query.search;
         const company = req.query.company;
+        const fechaDesde = req.query.fechaDesde;
+        const fechaHasta = req.query.fechaHasta;
+        const sortBy = req.query.sortBy;
+        const sortDir = (req.query.sortDir || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+        // Whitelist of allowed sort columns to prevent SQL injection
+        const allowedSortColumns = ['Ticket', 'NombreCliente', 'NombreEquipo', 'Estado', 'NombreTecnico', 'FechaVisita', 'IDEmpresa', 'Distrito', 'IdServicio'];
+        const safeSortColumn = allowedSortColumns.includes(sortBy) ? sortBy : 'FechaVisita';
+        const safeSortDir = sortDir === 'ASC' ? 'ASC' : 'DESC';
 
         // Dynamic Column filters
         const colFilters = {};
@@ -494,11 +856,21 @@ app.get('/api/tickets', async (req, res) => {
             baseQuery += ` AND T.${col} LIKE @col_${index}`;
         });
 
+        // Date range filters
+        if (fechaDesde) {
+            baseQuery += ` AND T.FechaVisita >= @fechaDesde`;
+        }
+        if (fechaHasta) {
+            baseQuery += ` AND T.FechaVisita <= @fechaHasta`;
+        }
+
         // Helper to populate request inputs
         const populateInputs = (req) => {
             if (status && status !== 'Todos') req.input('status', sql.NVarChar, status);
             if (company && company !== 'undefined') req.input('company', sql.VarChar, company);
             if (search) req.input('search', sql.NVarChar, `%${search}%`);
+            if (fechaDesde) req.input('fechaDesde', sql.DateTime, new Date(fechaDesde));
+            if (fechaHasta) req.input('fechaHasta', sql.DateTime, new Date(fechaHasta + 'T23:59:59'));
             Object.keys(colFilters).forEach((col, index) => {
                 req.input(`col_${index}`, sql.NVarChar, `%${colFilters[col]}%`);
             });
@@ -507,7 +879,7 @@ app.get('/api/tickets', async (req, res) => {
         // 1. Get Total Count (fast with proper indexes)
         const countReq = pool.request();
         populateInputs(countReq);
-        const countResult = await countReq.query(`SELECT COUNT(*) as total ${baseQuery}`);
+        const countResult = await countReq.query(`SELECT COUNT(DISTINCT T.Ticket) as total ${baseQuery}`);
         const total = countResult.recordset[0].total;
 
         // 2. Get Data with pagination
@@ -515,7 +887,7 @@ app.get('/api/tickets', async (req, res) => {
         const dataReq = pool.request();
         populateInputs(dataReq);
 
-        console.log('[SIATC.Tickets] Executing optimized query...');
+        console.log('[SIATC.Tickets] Executing optimized query...', { page, limit, status, search, company, fechaDesde, fechaHasta, sortBy: safeSortColumn, sortDir: safeSortDir, colFilters, total });
         const result = await dataReq.query(`
             SELECT 
                 T.Ticket,
@@ -562,7 +934,7 @@ app.get('/api/tickets', async (req, res) => {
                 C.Autorizador_Cancelacion, 
                 C.Generado_el as FechaCancelacion
             ${baseQuery}
-            ORDER BY T.FechaVisita DESC
+            ORDER BY T.${safeSortColumn} ${safeSortDir}
             OFFSET ${validOffset} ROWS FETCH NEXT ${limit} ROWS ONLY
         `);
         console.log('[SIATC.Tickets] Query executed. Rows:', result.recordset.length);
@@ -595,85 +967,378 @@ app.get('/api/tickets', async (req, res) => {
 });
 
 
-// Endpoint: Login
+// =============================================
+// ITEMS (SIATC.Items)
+// =============================================
+
+// GET /api/items — List with pagination, search, filters, sorting
+app.get('/api/items', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 25;
+        const offset = (page - 1) * limit;
+        const search = (req.query.search || '').trim();
+        const categoria = (req.query.categoria || '').trim();
+        const tipo = (req.query.tipo || '').trim();
+        const estado = (req.query.estado || '').trim();
+        const sector = (req.query.sector || '').trim();
+
+        // Sorting
+        const allowedSort = ['IdItem', 'CodigoSAP', 'CodigoExterno', 'Nombre', 'Categoria', 'UnidadMedida', 'Tipo', 'Estado', 'Sector', 'FechaCreacion'];
+        let sortBy = allowedSort.includes(req.query.sortBy) ? req.query.sortBy : 'Nombre';
+        const sortDir = req.query.sortDir === 'desc' ? 'DESC' : 'ASC';
+
+        let whereClauses = [];
+        const request = pool.request();
+
+        if (search) {
+            whereClauses.push(`(I.Nombre LIKE @search OR I.CodigoSAP LIKE @search OR I.CodigoExterno LIKE @search OR I.Categoria LIKE @search)`);
+            request.input('search', sql.NVarChar, `%${search}%`);
+        }
+        if (categoria) {
+            whereClauses.push(`I.Categoria = @categoria`);
+            request.input('categoria', sql.NVarChar, categoria);
+        }
+        if (tipo) {
+            whereClauses.push(`I.Tipo = @tipo`);
+            request.input('tipo', sql.NVarChar, tipo);
+        }
+        if (estado) {
+            whereClauses.push(`I.Estado = @estado`);
+            request.input('estado', sql.NVarChar, estado);
+        }
+        if (sector) {
+            whereClauses.push(`I.Sector = @sector`);
+            request.input('sector', sql.NVarChar, sector);
+        }
+
+        const whereSQL = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
+
+        // Count
+        const countResult = await request.query(`SELECT COUNT(*) as total FROM [SIATC].[Items] I ${whereSQL}`);
+        const total = countResult.recordset[0].total;
+
+        // Data
+        const dataRequest = pool.request();
+        if (search) dataRequest.input('search', sql.NVarChar, `%${search}%`);
+        if (categoria) dataRequest.input('categoria', sql.NVarChar, categoria);
+        if (tipo) dataRequest.input('tipo', sql.NVarChar, tipo);
+        if (estado) dataRequest.input('estado', sql.NVarChar, estado);
+        if (sector) dataRequest.input('sector', sql.NVarChar, sector);
+
+        const dataResult = await dataRequest
+            .input('offset', sql.Int, offset)
+            .input('limit', sql.Int, limit)
+            .query(`
+                SELECT 
+                    I.IdItem as id,
+                    I.CodigoSAP as codigoSAP,
+                    I.CodigoExterno as codigoExterno,
+                    I.Nombre as nombre,
+                    I.Categoria as categoria,
+                    I.UnidadMedida as unidadMedida,
+                    I.Tipo as tipo,
+                    I.Estado as estado,
+                    I.Garantia as garantia,
+                    I.Sector as sector,
+                    I.Descuento as descuento,
+                    I.EstadoEnCatalogo as estadoEnCatalogo,
+                    I.FechaCreacion as fechaCreacion,
+                    I.FechaModificacion as fechaModificacion
+                FROM [SIATC].[Items] I
+                ${whereSQL}
+                ORDER BY CASE WHEN I.${sortBy} IS NULL THEN 1 ELSE 0 END, I.${sortBy} ${sortDir}
+                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+            `);
+
+        res.json({
+            data: dataResult.recordset,
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    } catch (err) {
+        console.error('Error fetching items:', err);
+        res.status(500).json({ error: 'Error fetching items', details: err.message });
+    }
+});
+
+// GET /api/items/stats — KPI stats
+app.get('/api/items/stats', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const result = await pool.request().query(`
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN Estado = 'Activo' THEN 1 ELSE 0 END) as activos,
+                SUM(CASE WHEN Estado = 'Inactivo' THEN 1 ELSE 0 END) as inactivos,
+                SUM(CASE WHEN Tipo = 'Pieza' THEN 1 ELSE 0 END) as piezas,
+                SUM(CASE WHEN Tipo = 'Servicio' THEN 1 ELSE 0 END) as servicios,
+                SUM(CASE WHEN Tipo = 'Catálogo' THEN 1 ELSE 0 END) as catalogo,
+                COUNT(DISTINCT Categoria) as categorias,
+                COUNT(DISTINCT Sector) as sectores
+            FROM [SIATC].[Items]
+        `);
+        res.json(result.recordset[0]);
+    } catch (err) {
+        console.error('Error fetching item stats:', err);
+        res.status(500).json({ error: 'Error fetching item stats' });
+    }
+});
+
+// GET /api/items/filters — Distinct values for filters
+app.get('/api/items/filters', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const [categorias, tipos, estados, sectores] = await Promise.all([
+            pool.request().query(`SELECT DISTINCT Categoria as value FROM [SIATC].[Items] WHERE Categoria IS NOT NULL ORDER BY Categoria`),
+            pool.request().query(`SELECT DISTINCT Tipo as value FROM [SIATC].[Items] ORDER BY Tipo`),
+            pool.request().query(`SELECT DISTINCT Estado as value FROM [SIATC].[Items] ORDER BY Estado`),
+            pool.request().query(`SELECT DISTINCT Sector as value FROM [SIATC].[Items] WHERE Sector IS NOT NULL ORDER BY Sector`)
+        ]);
+        res.json({
+            categorias: categorias.recordset.map(r => r.value),
+            tipos: tipos.recordset.map(r => r.value),
+            estados: estados.recordset.map(r => r.value),
+            sectores: sectores.recordset.map(r => r.value)
+        });
+    } catch (err) {
+        console.error('Error fetching item filters:', err);
+        res.status(500).json({ error: 'Error fetching item filters' });
+    }
+});
+
+// GET /api/items/:id — Single item detail
+app.get('/api/items/:id', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input('id', sql.Int, parseInt(req.params.id))
+            .query(`
+                SELECT 
+                    IdItem as id,
+                    CodigoSAP as codigoSAP,
+                    CodigoExterno as codigoExterno,
+                    Nombre as nombre,
+                    Categoria as categoria,
+                    UnidadMedida as unidadMedida,
+                    Tipo as tipo,
+                    Estado as estado,
+                    Garantia as garantia,
+                    Sector as sector,
+                    Descuento as descuento,
+                    EstadoEnCatalogo as estadoEnCatalogo,
+                    FechaCreacion as fechaCreacion,
+                    FechaModificacion as fechaModificacion
+                FROM [SIATC].[Items]
+                WHERE IdItem = @id
+            `);
+        if (!result.recordset[0]) {
+            return res.status(404).json({ error: 'Item no encontrado' });
+        }
+        res.json(result.recordset[0]);
+    } catch (err) {
+        console.error('Error fetching item:', err);
+        res.status(500).json({ error: 'Error fetching item' });
+    }
+});
+
+// POST /api/items — Create item
+app.post('/api/items', async (req, res) => {
+    try {
+        const { codigoSAP, codigoExterno, nombre, categoria, unidadMedida, tipo, estado, garantia, sector, descuento, estadoEnCatalogo } = req.body;
+        if (!codigoSAP || !nombre) {
+            return res.status(400).json({ error: 'CodigoSAP y Nombre son requeridos' });
+        }
+        const pool = await getConnection();
+
+        // Duplicate check
+        const existing = await pool.request()
+            .input('codigoSAP', sql.NVarChar, codigoSAP)
+            .query('SELECT IdItem FROM [SIATC].[Items] WHERE CodigoSAP = @codigoSAP');
+        if (existing.recordset.length > 0) {
+            return res.status(409).json({ error: 'Ya existe un item con ese Código SAP' });
+        }
+
+        const result = await pool.request()
+            .input('codigoSAP', sql.NVarChar, codigoSAP)
+            .input('codigoExterno', sql.NVarChar, codigoExterno || null)
+            .input('nombre', sql.NVarChar, nombre)
+            .input('categoria', sql.NVarChar, categoria || null)
+            .input('unidadMedida', sql.NVarChar, unidadMedida || 'Unidad')
+            .input('tipo', sql.NVarChar, tipo || 'Pieza')
+            .input('estado', sql.NVarChar, estado || 'Activo')
+            .input('garantia', sql.NVarChar, garantia || null)
+            .input('sector', sql.NVarChar, sector || null)
+            .input('descuento', sql.Decimal(5, 2), descuento ? parseFloat(descuento) : null)
+            .input('estadoEnCatalogo', sql.NVarChar, estadoEnCatalogo || null)
+            .query(`
+                INSERT INTO [SIATC].[Items] (CodigoSAP, CodigoExterno, Nombre, Categoria, UnidadMedida, Tipo, Estado, Garantia, Sector, Descuento, EstadoEnCatalogo)
+                OUTPUT INSERTED.IdItem
+                VALUES (@codigoSAP, @codigoExterno, @nombre, @categoria, @unidadMedida, @tipo, @estado, @garantia, @sector, @descuento, @estadoEnCatalogo)
+            `);
+
+        res.status(201).json({ success: true, id: result.recordset[0].IdItem, message: 'Item creado' });
+    } catch (err) {
+        console.error('Error creating item:', err);
+        res.status(500).json({ error: 'Error creating item', details: err.message });
+    }
+});
+
+// PUT /api/items/:id — Update item
+app.put('/api/items/:id', async (req, res) => {
+    try {
+        const { codigoSAP, codigoExterno, nombre, categoria, unidadMedida, tipo, estado, garantia, sector, descuento, estadoEnCatalogo } = req.body;
+        const id = parseInt(req.params.id);
+        const pool = await getConnection();
+
+        // Check SAP code uniqueness (exclude current item)
+        if (codigoSAP) {
+            const dup = await pool.request()
+                .input('codigoSAP', sql.NVarChar, codigoSAP)
+                .input('id', sql.Int, id)
+                .query('SELECT IdItem FROM [SIATC].[Items] WHERE CodigoSAP = @codigoSAP AND IdItem != @id');
+            if (dup.recordset.length > 0) {
+                return res.status(409).json({ error: 'Ya existe otro item con ese Código SAP' });
+            }
+        }
+
+        await pool.request()
+            .input('id', sql.Int, id)
+            .input('codigoSAP', sql.NVarChar, codigoSAP)
+            .input('codigoExterno', sql.NVarChar, codigoExterno || null)
+            .input('nombre', sql.NVarChar, nombre)
+            .input('categoria', sql.NVarChar, categoria || null)
+            .input('unidadMedida', sql.NVarChar, unidadMedida || 'Unidad')
+            .input('tipo', sql.NVarChar, tipo || 'Pieza')
+            .input('estado', sql.NVarChar, estado || 'Activo')
+            .input('garantia', sql.NVarChar, garantia || null)
+            .input('sector', sql.NVarChar, sector || null)
+            .input('descuento', sql.Decimal(5, 2), descuento ? parseFloat(descuento) : null)
+            .input('estadoEnCatalogo', sql.NVarChar, estadoEnCatalogo || null)
+            .query(`
+                UPDATE [SIATC].[Items] SET
+                    CodigoSAP = @codigoSAP,
+                    CodigoExterno = @codigoExterno,
+                    Nombre = @nombre,
+                    Categoria = @categoria,
+                    UnidadMedida = @unidadMedida,
+                    Tipo = @tipo,
+                    Estado = @estado,
+                    Garantia = @garantia,
+                    Sector = @sector,
+                    Descuento = @descuento,
+                    EstadoEnCatalogo = @estadoEnCatalogo,
+                    FechaModificacion = GETDATE()
+                WHERE IdItem = @id
+            `);
+
+        res.json({ success: true, message: 'Item actualizado' });
+    } catch (err) {
+        console.error('Error updating item:', err);
+        res.status(500).json({ error: 'Error updating item', details: err.message });
+    }
+});
+
+// DELETE /api/items/:id — Delete item
+app.delete('/api/items/:id', async (req, res) => {
+    try {
+        const pool = await getConnection();
+        await pool.request()
+            .input('id', sql.Int, parseInt(req.params.id))
+            .query('DELETE FROM [SIATC].[Items] WHERE IdItem = @id');
+        res.json({ success: true, message: 'Item eliminado' });
+    } catch (err) {
+        console.error('Error deleting item:', err);
+        res.status(500).json({ error: 'Error deleting item' });
+    }
+});
+
+
+// Endpoint: Login (SIATC.Usuarios)
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log(`Login attempt for: '${username}' with password length: ${password?.length}`);
+        console.log(`Login attempt for: '${username}'`);
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Usuario y contraseña son requeridos' });
+        }
 
         const pool = await getConnection();
 
-        // Query fetching user and role details
-        // Linking GAC_APP_TB_USUARIOS.Tipo -> GAC_APP_TB_USUARIOS_TIPO.[ID Tipo de Usuario]
         const result = await pool.request()
-            .input('username', sql.VarChar, username)
+            .input('username', sql.NVarChar, username)
             .query(`
                 SELECT 
-                    U.[ID Usuario] as Id,
-                    U.Nombre, 
-                    U.Apellido, 
-                    U.Cod_usuario, 
-                    U.[Contraseña] as Password,
-                    T.[Tipo de Usuario] as Role,
-                    C.Nombre_CAS as CompanyName,
-                    C.Codigo_FSM as FsmCode
-                FROM [dbo].[GAC_APP_TB_USUARIOS] U
-                LEFT JOIN [dbo].[GAC_APP_TB_USUARIOS_TIPO] T ON U.Tipo = T.[ID Tipo de Usuario]
-                LEFT JOIN [dbo].[GAC_APP_TB_CAS] C ON U.Empresa = C.ID_CAS
-                WHERE U.[ID Usuario] = @username
+                    U.IdUsuario,
+                    U.Username,
+                    U.Password,
+                    U.Nombre,
+                    U.Apellido,
+                    U.Email,
+                    U.IdEmpresa,
+                    U.IdRol,
+                    U.CodigoTecnico,
+                    U.Activo,
+                    U.RequiereCambioPassword,
+                    R.NombreRol,
+                    E.NombreEmpresa,
+                    E.TipoEmpresa
+                FROM [SIATC].[Usuarios] U
+                LEFT JOIN [SIATC].[Roles] R ON U.IdRol = R.IdRol
+                LEFT JOIN [SIATC].[Empresas] E ON U.IdEmpresa = E.IdEmpresa
+                WHERE U.Username = @username
             `);
 
         const user = result.recordset[0];
         if (!user) {
-            console.log('User not found in DB');
             return res.status(401).json({ error: 'Usuario no encontrado' });
         }
 
-        // Verify password (Plain text based on sample "123")
-        // Using trim() on both sides to be safe against whitespace
+        // Check if user is active
+        if (!user.Activo) {
+            return res.status(403).json({ error: 'Usuario desactivado. Contacte al administrador.' });
+        }
+
+        // Verify password (plain text comparison — passwords stored as plain text)
         const dbPassword = (user.Password || '').trim();
         const inputPassword = (password || '').trim();
 
         if (dbPassword !== inputPassword) {
-            console.log(`Password mismatch. DB: '${dbPassword}', Input: '${inputPassword}'`);
             return res.status(401).json({ error: 'Contraseña incorrecta' });
         }
 
         const fullName = `${user.Nombre || ''} ${user.Apellido || ''}`.trim();
-
-        // Map DB Roles to Frontend Roles (ADMIN, TECNICO, OPERADOR)
-        let role = 'OPERADOR'; // Default
-        const dbRole = (user.Role || '').toUpperCase();
-
-        if (dbRole.includes('ADMINISTRADOR')) {
-            role = 'ADMIN';
-        } else if (dbRole.includes('TECNICO') || dbRole.includes('CHOFER')) {
-            role = 'TECNICO';
-        } else if (dbRole.includes('SUPERVISOR') || dbRole.includes('ASISTENTE')) {
-            role = 'OPERADOR';
-        }
-
+        const roleName = (user.NombreRol || 'INVITADO').toUpperCase();
 
         const token = jwt.sign(
-            { id: user.Id, username: user.Cod_usuario, role: role },
+            { id: user.IdUsuario, username: user.Username, roleId: user.IdRol, roleName },
             process.env.JWT_SECRET || 'secret_key_123',
             { expiresIn: '24h' }
         );
 
-        // Update Last Login Time
+        // Update UltimoLogin
         await pool.request()
-            .input('username', sql.VarChar, user.Id)
-            .query('UPDATE [dbo].[GAC_APP_TB_USUARIOS] SET LastLogin = GETDATE() WHERE [ID Usuario] = @username');
+            .input('id', sql.Int, user.IdUsuario)
+            .query('UPDATE [SIATC].[Usuarios] SET UltimoLogin = GETDATE() WHERE IdUsuario = @id');
 
         res.json({
             token,
             user: {
-                id: user.Id,
-                username: user.Cod_usuario,
+                id: user.IdUsuario,
+                username: user.Username,
                 name: fullName,
-                role: role,
-                companyName: user.CompanyName,
-                fsmCode: user.FsmCode
+                firstName: user.Nombre,
+                lastName: user.Apellido,
+                email: user.Email,
+                role: roleName,
+                roleId: user.IdRol,
+                roleName: user.NombreRol,
+                empresaId: user.IdEmpresa,
+                empresaName: user.NombreEmpresa,
+                tipoEmpresa: user.TipoEmpresa,
+                codigoTecnico: user.CodigoTecnico,
+                requirePasswordChange: !!user.RequiereCambioPassword
             }
         });
     } catch (err) {

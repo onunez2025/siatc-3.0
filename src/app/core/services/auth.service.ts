@@ -6,17 +6,29 @@ import { of, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface User {
-    id: string;
+    id: number;
     username: string;
     name: string;
-    role: 'ADMIN' | 'TECNICO' | 'OPERADOR';
-    companyName?: string;
-    fsmCode?: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    roleId: number;
+    roleName: string;
+    empresaId: number;
+    empresaName: string;
+    tipoEmpresa: string;
+    codigoTecnico?: string;
+    requirePasswordChange?: boolean;
 }
 
 interface LoginResponse {
     token: string;
     user: User;
+}
+
+interface LoginError {
+    error: string;
 }
 
 @Injectable({
@@ -34,20 +46,26 @@ export class AuthService {
     // Computed
     currentUser = computed(() => this.currentUserSignal());
     isAuthenticated = computed(() => !!this.currentUserSignal());
-    isAdmin = computed(() => this.currentUserSignal()?.role === 'ADMIN');
-    isTechnician = computed(() => this.currentUserSignal()?.role === 'TECNICO');
+    isAdmin = computed(() => {
+        const u = this.currentUserSignal();
+        return u?.roleId === 1 || (u?.role || '').toUpperCase() === 'ADMINISTRADOR';
+    });
+    isTechnician = computed(() => {
+        const u = this.currentUserSignal();
+        return u?.roleId === 2 || (u?.role || '').toUpperCase() === 'TECNICO';
+    });
 
     constructor() { }
 
-    login(credentials: { username: string; password: string }): Observable<boolean> {
+    login(credentials: { username: string; password: string }): Observable<{ success: boolean; error?: string }> {
         return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
             tap(response => {
                 this.setSession(response.user, response.token);
             }),
-            map(() => true),
+            map(() => ({ success: true })),
             catchError(err => {
-                console.error('Login failed', err);
-                return of(false);
+                const message = err?.error?.error || 'Error de conexión';
+                return of({ success: false, error: message });
             })
         );
     }

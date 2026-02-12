@@ -26,7 +26,7 @@ app.use(express.json());
 
 // Rota de prueba básica
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'API is running' });
+    res.json({ status: 'ok', message: 'API is running', version: '3.0.2', build: '2026-02-12', schema: 'SIATC' });
 });
 
 // Endpoint: Obtener Clientes (BusinessPartners)

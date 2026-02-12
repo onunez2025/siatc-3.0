@@ -95,8 +95,8 @@ interface DashboardData {
         <div class="lg:col-span-2 space-y-4">
 
           <!-- Status Bar Chart -->
-          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 rounded-t-lg flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="material-icons text-primary text-base">bar_chart</span>
                 <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Distribución por Estado (Hoy)</h3>
@@ -131,8 +131,8 @@ interface DashboardData {
           </div>
 
           <!-- Trend: últimos 7 días -->
-          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 rounded-t-lg flex items-center gap-2">
               <span class="material-icons text-primary text-base">trending_up</span>
               <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Tendencia Últimos 7 Días</h3>
             </div>

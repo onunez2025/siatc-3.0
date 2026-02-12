@@ -718,6 +718,7 @@ app.get('/api/dashboard', async (req, res) => {
                     SUM(CASE WHEN Estado = 'Cancelled' THEN 1 ELSE 0 END) as cancelled
                 FROM [SIATC].[Tickets]
                 WHERE CAST(FechaVisita AS DATE) >= CAST(DATEADD(DAY, -7, GETDATE()) AS DATE)
+                  AND CAST(FechaVisita AS DATE) <= CAST(GETDATE() AS DATE)
             `),
             // 3. Distribución por estado (todos)
             pool.request().input('today', sql.Date, todayStr).query(`

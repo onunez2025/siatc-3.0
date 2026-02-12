@@ -13,9 +13,9 @@ import { Ticket } from '../../../core/services/ticket.service';
         <div class="flex-1 overflow-y-auto">
 
           <!-- Hero Header -->
-          <div class="px-6 py-5 border-b border-slate-200" [ngClass]="statusHeaderClass">
+          <div class="px-4 md:px-6 py-5 border-b border-slate-200" [ngClass]="statusHeaderClass">
             <div class="flex items-center justify-between mb-3">
-              <span class="text-2xl font-black text-slate-800 tracking-tight">#{{ ticket.Ticket }}</span>
+              <span class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">#{{ ticket.Ticket }}</span>
               <span class="px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wider" [ngClass]="statusBadgeClass">
                 {{ ticket.Estado }}
               </span>
@@ -34,7 +34,7 @@ import { Ticket } from '../../../core/services/ticket.service';
           </div>
 
           <!-- Sections -->
-          <div class="p-6 space-y-5">
+          <div class="p-4 md:p-6 space-y-4 md:space-y-5">
 
             <!-- Cliente -->
             <section class="bg-white border border-slate-200 rounded-lg overflow-hidden">
@@ -42,8 +42,8 @@ import { Ticket } from '../../../core/services/ticket.service';
                 <span class="material-icons text-primary text-base">person</span>
                 <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Cliente</h3>
               </div>
-              <div class="p-4 grid grid-cols-2 gap-x-6 gap-y-3">
-                <div class="col-span-2">
+              <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                <div class="sm:col-span-2">
                   <span class="text-[10px] font-bold text-slate-400 uppercase">Nombre</span>
                   <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ ticket.NombreCliente }}</p>
                 </div>
@@ -278,17 +278,17 @@ import { Ticket } from '../../../core/services/ticket.service';
           </div>
         </div>
 
-        <!-- Footer Actions -->
-        <div class="px-6 py-3 border-t border-slate-200 bg-white flex items-center justify-between shrink-0">
+        <!-- Footer Actions (sticky on mobile) -->
+        <div class="px-4 md:px-6 py-3 border-t border-slate-200 bg-white flex items-center justify-between shrink-0 sticky bottom-0">
           <button 
             (click)="close.emit()" 
-            class="px-4 py-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded text-sm font-medium transition-colors"
+            class="px-4 py-2.5 md:py-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl md:rounded text-sm font-medium transition-colors"
           >
             Cerrar
           </button>
           <button 
             (click)="edit.emit(ticket)" 
-            class="px-5 py-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wide rounded shadow-sm transition-all flex items-center gap-1.5"
+            class="px-5 py-2.5 md:py-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wide rounded-xl md:rounded shadow-sm transition-all flex items-center gap-1.5"
           >
             <span class="material-icons text-sm">edit</span>
             Editar Ticket

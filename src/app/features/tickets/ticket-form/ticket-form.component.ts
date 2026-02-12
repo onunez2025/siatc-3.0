@@ -14,7 +14,7 @@ import { Ticket } from '../../../core/services/ticket.service';
 
         <!-- Hero Header (edit mode) -->
         @if (ticket) {
-          <div class="px-6 py-4 border-b border-slate-200 bg-primary/5">
+          <div class="px-4 md:px-6 py-4 border-b border-slate-200 bg-primary/5">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <span class="material-icons text-primary text-lg">edit_note</span>
@@ -27,7 +27,7 @@ import { Ticket } from '../../../core/services/ticket.service';
           </div>
         }
 
-        <div class="p-6 space-y-5">
+        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
 
           <!-- InformaciÃ³n General -->
           <section class="bg-white border border-slate-200 rounded-lg overflow-hidden">
@@ -35,7 +35,7 @@ import { Ticket } from '../../../core/services/ticket.service';
               <span class="material-icons text-primary text-base">info</span>
               <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">InformaciÃ³n General</h3>
             </div>
-            <div class="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
               @if (ticket) {
                 <div>
                   <label class="text-[10px] font-bold text-slate-400 uppercase">ID Ticket</label>
@@ -67,7 +67,7 @@ import { Ticket } from '../../../core/services/ticket.service';
                 <input [(ngModel)]="formData.FechaVisita" type="datetime-local"
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
               </div>
-              <div class="col-span-2">
+              <div class="sm:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo Servicio</label>
                 <input [(ngModel)]="formData.IdServicio"
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
@@ -82,8 +82,8 @@ import { Ticket } from '../../../core/services/ticket.service';
               <span class="material-icons text-primary text-base">person</span>
               <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Cliente</h3>
             </div>
-            <div class="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
-              <div class="col-span-2">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+              <div class="sm:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Cliente</label>
                 <input [(ngModel)]="formData.NombreCliente"
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
@@ -122,8 +122,8 @@ import { Ticket } from '../../../core/services/ticket.service';
               <span class="material-icons text-primary text-base">location_on</span>
               <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">UbicaciÃ³n</h3>
             </div>
-            <div class="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
-              <div class="col-span-2">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+              <div class="sm:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">DirecciÃ³n</label>
                 <input [(ngModel)]="formData.Calle"
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
@@ -153,7 +153,7 @@ import { Ticket } from '../../../core/services/ticket.service';
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                   placeholder="â€”">
               </div>
-              <div class="col-span-2">
+              <div class="sm:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Referencia</label>
                 <input [(ngModel)]="formData.Referencia"
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
@@ -168,8 +168,8 @@ import { Ticket } from '../../../core/services/ticket.service';
               <span class="material-icons text-primary text-base">precision_manufacturing</span>
               <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Equipo</h3>
             </div>
-            <div class="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
-              <div class="col-span-2">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+              <div class="sm:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Equipo</label>
                 <input [(ngModel)]="formData.NombreEquipo"
                   class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
@@ -202,7 +202,7 @@ import { Ticket } from '../../../core/services/ticket.service';
               <span class="material-icons text-primary text-base">engineering</span>
               <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">TÃ©cnico Asignado</h3>
             </div>
-            <div class="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre</label>
                 <input [(ngModel)]="formData.NombreTecnico"
@@ -305,8 +305,8 @@ import { Ticket } from '../../../core/services/ticket.service';
                 <span class="material-icons text-red-500 text-base">cancel</span>
                 <h3 class="text-xs font-bold text-red-600 uppercase tracking-wider">CancelaciÃ³n</h3>
               </div>
-              <div class="p-4 grid grid-cols-2 gap-x-4 gap-y-3">
-                <div class="col-span-2">
+              <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                <div class="sm:col-span-2">
                   <label class="text-[10px] font-bold text-slate-400 uppercase">Motivo</label>
                   <input [(ngModel)]="formData.Motivo_Cancelacion"
                     class="mt-1 w-full px-3 py-2 bg-white border border-red-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all"
@@ -330,14 +330,14 @@ import { Ticket } from '../../../core/services/ticket.service';
         </div>
       </div>
 
-      <!-- Footer Actions -->
-      <div class="px-6 py-3 border-t border-slate-200 bg-white flex items-center justify-between shrink-0">
+      <!-- Footer Actions (sticky on mobile) -->
+      <div class="px-4 md:px-6 py-3 border-t border-slate-200 bg-white flex items-center justify-between shrink-0 sticky bottom-0">
         <button (click)="close.emit()"
-          class="px-4 py-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded text-sm font-medium transition-colors">
+          class="px-4 py-2.5 md:py-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl md:rounded text-sm font-medium transition-colors">
           Cancelar
         </button>
         <button (click)="onSubmit()"
-          class="px-5 py-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wide rounded shadow-sm transition-all flex items-center gap-1.5">
+          class="px-5 py-2.5 md:py-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wide rounded-xl md:rounded shadow-sm transition-all flex items-center gap-1.5">
           <span class="material-icons text-sm">save</span>
           Guardar Ticket
         </button>

@@ -6,13 +6,17 @@ const SYNC_INTERVAL = '*/1 * * * *'; // Every minute
 const BATCH_SIZE = 1000;
 
 async function getLastSyncDate(pool) {
+    // Use LastSync (our own controlled timestamp) instead of FechaModificacionIT
+    // which comes from the source and can contain corrupt/future dates.
+    // Also cap it at GETDATE() to avoid future-date watermark issues.
     const result = await pool.request().query(`
-        SELECT MAX(FechaModificacionIT) as lastSync 
+        SELECT CASE 
+            WHEN MAX(LastSync) > GETDATE() THEN GETDATE()
+            ELSE COALESCE(MAX(LastSync), '2020-01-01')
+        END as lastSync 
         FROM [SIATC].[Tickets]
     `);
-    const date = result.recordset[0].lastSync;
-    // Default to a long time ago if table is empty
-    return date || new Date('2020-01-01');
+    return result.recordset[0].lastSync;
 }
 
 function cleanString(val) {
@@ -51,15 +55,16 @@ async function syncTickets() {
         console.log(`[SYNC] Last Sync Date (Watermark): ${lastSyncDate.toISOString()}`);
 
         // 2. Fetch Updates from Source
-        // Note: We use > to get only new changes.
-        // Be careful with time zones. Ideally DBs are in UTC or same timezone.
+        // Strategy: Get records modified since our last sync, AND also any records
+        // that exist in source but not in target (to cover gaps/missed records).
         const updatesResult = await pool.request()
             .input('lastSync', sql.DateTime, lastSyncDate)
             .query(`
                 SELECT TOP (${BATCH_SIZE}) *
-                FROM [APPGAC].[Servicios]
-                WHERE TRY_CAST(FechaModificacionIT AS DATETIME) > @lastSync
-                ORDER BY TRY_CAST(FechaModificacionIT AS DATETIME) ASC
+                FROM [APPGAC].[Servicios] s
+                WHERE TRY_CAST(s.FechaModificacionIT AS DATETIME) > @lastSync
+                   OR NOT EXISTS (SELECT 1 FROM [SIATC].[Tickets] t WHERE t.Ticket = TRIM(s.Ticket))
+                ORDER BY TRY_CAST(s.FechaModificacionIT AS DATETIME) ASC
             `);
 
         const updates = updatesResult.recordset;

@@ -39,6 +39,10 @@ export interface TicketSearchParams {
     tecnico?: string;
     cliente?: string;
     empresa?: string;
+    dni?: string;
+    telefono?: string;
+    distrito?: string;
+    codigoPostal?: string;
     fechaDesde?: string;
     fechaHasta?: string;
     sortBy?: string;
@@ -123,9 +127,13 @@ export class TicketService {
 
         if (params.search) httpParams = httpParams.set('search', params.search);
         if (params.status) httpParams = httpParams.set('status', params.status);
-        if (params.tecnico) httpParams = httpParams.set('col_NombreTecnico', params.tecnico);
+        if (params.tecnico) httpParams = httpParams.set('tecnico', params.tecnico);
         if (params.cliente) httpParams = httpParams.set('col_NombreCliente', params.cliente);
         if (params.empresa) httpParams = httpParams.set('col_IDEmpresa', params.empresa);
+        if (params.dni) httpParams = httpParams.set('col_CodigoExternoCliente', params.dni);
+        if (params.telefono) httpParams = httpParams.set('telefono', params.telefono);
+        if (params.distrito) httpParams = httpParams.set('col_Distrito', params.distrito);
+        if (params.codigoPostal) httpParams = httpParams.set('col_CodigoPostal', params.codigoPostal);
         if (params.fechaDesde) httpParams = httpParams.set('fechaDesde', params.fechaDesde);
         if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
         if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
@@ -162,6 +170,10 @@ export class TicketService {
             tecnico: params.tecnico || '',
             cliente: params.cliente || '',
             empresa: params.empresa || '',
+            dni: params.dni || '',
+            telefono: params.telefono || '',
+            distrito: params.distrito || '',
+            codigoPostal: params.codigoPostal || '',
             fechaDesde: params.fechaDesde || '',
             fechaHasta: params.fechaHasta || '',
             sortBy: params.sortBy || '',

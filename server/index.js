@@ -806,6 +806,8 @@ app.get('/api/tickets', async (req, res) => {
         const status = req.query.status;
         const search = req.query.search;
         const company = req.query.company;
+        const tecnicoSearch = req.query.tecnico;
+        const telefonoSearch = req.query.telefono;
         const fechaDesde = req.query.fechaDesde;
         const fechaHasta = req.query.fechaHasta;
         const sortBy = req.query.sortBy;
@@ -816,11 +818,15 @@ app.get('/api/tickets', async (req, res) => {
         const safeSortColumn = allowedSortColumns.includes(sortBy) ? sortBy : 'FechaVisita';
         const safeSortDir = sortDir === 'ASC' ? 'ASC' : 'DESC';
 
-        // Dynamic Column filters
+        // Dynamic Column filters (whitelisted to prevent SQL injection)
+        const allowedColFilters = ['NombreCliente', 'IDEmpresa', 'CodigoExternoCliente', 'Distrito', 'CodigoPostal', 'NombreEquipo', 'Estado'];
         const colFilters = {};
         Object.keys(req.query).forEach(key => {
             if (key.startsWith('col_')) {
-                colFilters[key.replace('col_', '')] = req.query[key];
+                const col = key.replace('col_', '');
+                if (allowedColFilters.includes(col)) {
+                    colFilters[col] = req.query[key];
+                }
             }
         });
 
@@ -847,7 +853,14 @@ app.get('/api/tickets', async (req, res) => {
                 OR T.NombreCliente LIKE @search 
                 OR T.NombreEquipo LIKE @search
                 OR T.NombreTecnico LIKE @search
+                OR T.ApellidoTecnico LIKE @search
+                OR T.CodigoExternoCliente LIKE @search
+                OR T.Telefono1 LIKE @search
+                OR T.Celular1 LIKE @search
+                OR T.Celular2 LIKE @search
                 OR T.Distrito LIKE @search
+                OR T.CodigoPostal LIKE @search
+                OR T.Email LIKE @search
             )`;
         }
 
@@ -855,6 +868,16 @@ app.get('/api/tickets', async (req, res) => {
         Object.keys(colFilters).forEach((col, index) => {
             baseQuery += ` AND T.${col} LIKE @col_${index}`;
         });
+
+        // Compound tecnico filter (searches NombreTecnico + ApellidoTecnico)
+        if (tecnicoSearch) {
+            baseQuery += ` AND (T.NombreTecnico LIKE @tecnicoSearch OR T.ApellidoTecnico LIKE @tecnicoSearch)`;
+        }
+
+        // Compound telefono filter (searches Telefono1 + Celular1 + Celular2)
+        if (telefonoSearch) {
+            baseQuery += ` AND (T.Telefono1 LIKE @telefonoSearch OR T.Celular1 LIKE @telefonoSearch OR T.Celular2 LIKE @telefonoSearch)`;
+        }
 
         // Date range filters
         if (fechaDesde) {
@@ -869,6 +892,8 @@ app.get('/api/tickets', async (req, res) => {
             if (status && status !== 'Todos') req.input('status', sql.NVarChar, status);
             if (company && company !== 'undefined') req.input('company', sql.VarChar, company);
             if (search) req.input('search', sql.NVarChar, `%${search}%`);
+            if (tecnicoSearch) req.input('tecnicoSearch', sql.NVarChar, `%${tecnicoSearch}%`);
+            if (telefonoSearch) req.input('telefonoSearch', sql.NVarChar, `%${telefonoSearch}%`);
             if (fechaDesde) req.input('fechaDesde', sql.DateTime, new Date(fechaDesde));
             if (fechaHasta) req.input('fechaHasta', sql.DateTime, new Date(fechaHasta + 'T23:59:59'));
             Object.keys(colFilters).forEach((col, index) => {

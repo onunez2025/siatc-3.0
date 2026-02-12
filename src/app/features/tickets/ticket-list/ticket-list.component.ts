@@ -55,6 +55,14 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[130px] text-slate-700 font-medium" />
               <input [(ngModel)]="clienteFilter" (ngModelChange)="onTextFilterChange()" placeholder="Cliente..."
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[130px] text-slate-700 font-medium" />
+              <input [(ngModel)]="dniFilter" (ngModelChange)="onTextFilterChange()" placeholder="DNI / Cod. Ext..."
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[120px] text-slate-700 font-medium" />
+              <input [(ngModel)]="telefonoFilter" (ngModelChange)="onTextFilterChange()" placeholder="Teléfono..."
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[110px] text-slate-700 font-medium" />
+              <input [(ngModel)]="distritoFilter" (ngModelChange)="onTextFilterChange()" placeholder="Distrito..."
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[110px] text-slate-700 font-medium" />
+              <input [(ngModel)]="codigoPostalFilter" (ngModelChange)="onTextFilterChange()" placeholder="Cód. Postal..."
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[100px] text-slate-700 font-medium" />
               <input [(ngModel)]="empresaFilter" (ngModelChange)="onTextFilterChange()" placeholder="Empresa..."
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[130px] text-slate-700 font-medium" />
               <div class="flex items-center gap-1">
@@ -401,6 +409,31 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                     class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
                 </div>
 
+                <div>
+                  <label class="block text-sm font-semibold mb-2 text-slate-700">DNI / Cód. Externo</label>
+                  <input [(ngModel)]="dniFilter" placeholder="DNI o código externo..."
+                    class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold mb-2 text-slate-700">Teléfono</label>
+                  <input [(ngModel)]="telefonoFilter" placeholder="Teléfono o celular..."
+                    class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700">Distrito</label>
+                    <input [(ngModel)]="distritoFilter" placeholder="Distrito..."
+                      class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700">Cód. Postal</label>
+                    <input [(ngModel)]="codigoPostalFilter" placeholder="Código postal..."
+                      class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
+                  </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label class="block text-sm font-semibold mb-2 text-slate-700">Desde</label>
@@ -474,6 +507,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
   tecnicoFilter = '';
   clienteFilter = '';
   empresaFilter = '';
+  dniFilter = '';
+  telefonoFilter = '';
+  distritoFilter = '';
+  codigoPostalFilter = '';
   fechaDesde = '';
   fechaHasta = '';
   currentPage = 1;
@@ -492,7 +529,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
   mobileFilterOpen = signal(false);
 
   hasActiveFilters(): boolean {
-    return !!(this.statusFilter || this.tecnicoFilter || this.clienteFilter || this.empresaFilter || this.fechaDesde || this.fechaHasta);
+    return !!(this.statusFilter || this.tecnicoFilter || this.clienteFilter || this.empresaFilter || this.dniFilter || this.telefonoFilter || this.distritoFilter || this.codigoPostalFilter || this.fechaDesde || this.fechaHasta);
   }
 
   setMobileStatusFilter(status: string) {
@@ -560,6 +597,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
       tecnico: this.tecnicoFilter,
       cliente: this.clienteFilter,
       empresa: this.empresaFilter,
+      dni: this.dniFilter,
+      telefono: this.telefonoFilter,
+      distrito: this.distritoFilter,
+      codigoPostal: this.codigoPostalFilter,
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       sortBy: this.sortColumn || undefined,
@@ -578,6 +619,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
       tecnico: this.tecnicoFilter,
       cliente: this.clienteFilter,
       empresa: this.empresaFilter,
+      dni: this.dniFilter,
+      telefono: this.telefonoFilter,
+      distrito: this.distritoFilter,
+      codigoPostal: this.codigoPostalFilter,
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       sortBy: this.sortColumn || undefined,
@@ -623,6 +668,10 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.tecnicoFilter = '';
     this.clienteFilter = '';
     this.empresaFilter = '';
+    this.dniFilter = '';
+    this.telefonoFilter = '';
+    this.distritoFilter = '';
+    this.codigoPostalFilter = '';
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.currentPage = 1;

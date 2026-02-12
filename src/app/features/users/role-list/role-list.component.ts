@@ -12,19 +12,26 @@ import { environment } from '../../../../environments/environment';
   imports: [CommonModule, FormsModule, DrawerComponent],
   template: `
     <div class="flex flex-col h-full gap-4">
-      <!-- Toolbar -->
-      <div class="flex flex-col lg:flex-row justify-between gap-4 bg-white p-4 rounded border border-slate-200 shadow-sm">
+      <!-- Toolbar - Desktop -->
+      <div class="hidden md:flex flex-col lg:flex-row justify-between gap-4 bg-white p-4 rounded border border-slate-200 shadow-sm">
         <div class="flex items-center gap-3">
           <h1 class="text-lg font-bold tracking-tight text-slate-800 uppercase">Gestión de Roles</h1>
           <span class="text-xs text-slate-400">{{ roles().length }} roles</span>
         </div>
         <div class="flex items-center gap-2">
           <button (click)="openForm()" class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded flex items-center gap-2 font-semibold text-xs transition-all shadow-sm uppercase tracking-wide">
-            <span class="material-icons text-sm">add</span>
-            Nuevo Rol
+            <span class="material-icons text-sm">add</span> Nuevo Rol
           </button>
         </div>
       </div>
+
+      <!-- Toolbar - Mobile -->
+      <header class="flex md:hidden items-center justify-between bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 py-3 rounded-xl">
+        <h1 class="text-lg font-bold tracking-tight text-slate-800 flex items-center gap-2">
+          <span class="material-icons text-primary text-xl">shield</span> Roles
+        </h1>
+        <span class="text-xs text-slate-400 font-medium">{{ roles().length }} roles</span>
+      </header>
 
       <!-- Roles Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -53,7 +60,7 @@ import { environment } from '../../../../environments/environment';
                 <span class="text-[10px] text-slate-400">
                   {{ role.createdAt ? 'Creado: ' + (role.createdAt | date:'dd/MM/yyyy') : '' }}
                 </span>
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button (click)="$event.stopPropagation(); editRole(role)"
                     class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Editar">
                     <span class="material-icons text-base">edit</span>
@@ -81,6 +88,11 @@ import { environment } from '../../../../environments/environment';
           <span class="material-icons text-primary text-3xl animate-spin">autorenew</span>
         </div>
       }
+
+      <!-- FAB Mobile -->
+      <button (click)="openForm()" class="fixed bottom-20 right-5 md:hidden w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 z-30">
+        <span class="material-icons text-3xl">add</span>
+      </button>
 
       <!-- Drawer Form -->
       @if (isFormOpen()) {

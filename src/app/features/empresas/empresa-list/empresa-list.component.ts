@@ -12,146 +12,165 @@ import { environment } from '../../../../environments/environment';
   imports: [CommonModule, FormsModule, DrawerComponent],
   template: `
     <div class="flex flex-col h-full gap-4">
-      <!-- Toolbar -->
-      <div class="flex flex-col lg:flex-row justify-between gap-4 bg-white p-4 rounded border border-slate-200 shadow-sm">
-        <div class="flex items-center gap-3">
-          <h1 class="text-lg font-bold tracking-tight text-slate-800 uppercase">Gestión de Empresas</h1>
-          <span class="text-xs text-slate-400">{{ empresas().length }} empresas</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
-            <input type="checkbox" [(ngModel)]="showInactive" (ngModelChange)="loadEmpresas()" class="rounded border-slate-300 text-primary focus:ring-primary/30">
-            Mostrar inactivas
-          </label>
-          <button (click)="openForm()" class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded flex items-center gap-2 font-semibold text-xs transition-all shadow-sm uppercase tracking-wide">
-            <span class="material-icons text-sm">add</span>
-            Nueva Empresa
-          </button>
-        </div>
-      </div>
-
-      <!-- Stats Row -->
+      <!-- Stats Row (responsive: 2 cols mobile, 4 desktop) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <span class="material-icons text-primary">business</span>
-          </div>
-          <div>
-            <p class="text-xl font-bold text-slate-800">{{ empresas().length }}</p>
-            <p class="text-[10px] text-slate-400 uppercase font-bold">Total</p>
-          </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3 md:p-4 flex items-center gap-2 md:gap-3">
+          <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center"><span class="material-icons text-primary text-lg md:text-xl">business</span></div>
+          <div><p class="text-lg md:text-xl font-bold text-slate-800">{{ empresas().length }}</p><p class="text-[10px] text-slate-400 uppercase font-bold">Total</p></div>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-            <span class="material-icons text-purple-600">apartment</span>
-          </div>
-          <div>
-            <p class="text-xl font-bold text-slate-800">{{ countByType('PROPIA') }}</p>
-            <p class="text-[10px] text-slate-400 uppercase font-bold">Propias</p>
-          </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3 md:p-4 flex items-center gap-2 md:gap-3">
+          <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-purple-100 flex items-center justify-center"><span class="material-icons text-purple-600 text-lg md:text-xl">apartment</span></div>
+          <div><p class="text-lg md:text-xl font-bold text-slate-800">{{ countByType('PROPIA') }}</p><p class="text-[10px] text-slate-400 uppercase font-bold">Propias</p></div>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center">
-            <span class="material-icons text-teal-600">handshake</span>
-          </div>
-          <div>
-            <p class="text-xl font-bold text-slate-800">{{ countByType('CAS') }}</p>
-            <p class="text-[10px] text-slate-400 uppercase font-bold">CAS</p>
-          </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3 md:p-4 flex items-center gap-2 md:gap-3">
+          <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-teal-100 flex items-center justify-center"><span class="material-icons text-teal-600 text-lg md:text-xl">handshake</span></div>
+          <div><p class="text-lg md:text-xl font-bold text-slate-800">{{ countByType('CAS') }}</p><p class="text-[10px] text-slate-400 uppercase font-bold">CAS</p></div>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-            <span class="material-icons text-green-600">people</span>
-          </div>
-          <div>
-            <p class="text-xl font-bold text-slate-800">{{ totalUsers() }}</p>
-            <p class="text-[10px] text-slate-400 uppercase font-bold">Usuarios</p>
-          </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3 md:p-4 flex items-center gap-2 md:gap-3">
+          <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-green-100 flex items-center justify-center"><span class="material-icons text-green-600 text-lg md:text-xl">people</span></div>
+          <div><p class="text-lg md:text-xl font-bold text-slate-800">{{ totalUsers() }}</p><p class="text-[10px] text-slate-400 uppercase font-bold">Usuarios</p></div>
         </div>
       </div>
 
-      <!-- Table -->
-      <div class="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex-1">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 bg-slate-50">
-                <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Empresa</th>
-                <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipo</th>
-                <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Código FSM</th>
-                <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Usuarios</th>
-                <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
-                <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Creación</th>
-                <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (emp of empresas(); track emp.id) {
-                <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" (click)="viewDetail(emp)">
-                  <td class="px-4 py-3">
-                    <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs shrink-0"
-                        [ngClass]="emp.type === 'PROPIA' ? 'bg-purple-500' : 'bg-teal-500'">
-                        <span class="material-icons text-base">{{ emp.type === 'PROPIA' ? 'apartment' : 'handshake' }}</span>
-                      </div>
-                      <div>
-                        <p class="text-sm font-semibold text-slate-800">{{ emp.name }}</p>
-                        <p class="text-[10px] text-slate-400 font-mono">ID: {{ emp.id }}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold"
-                      [ngClass]="emp.type === 'PROPIA' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700'">
-                      {{ emp.type }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 text-xs text-slate-600 font-mono">{{ emp.codigoFSM || '—' }}</td>
-                  <td class="px-4 py-3 text-center">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-xs font-semibold text-slate-600">
-                      <span class="material-icons text-xs">people</span>
-                      {{ emp.userCount || 0 }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
-                      [ngClass]="emp.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'">
-                      {{ emp.active ? 'ACTIVO' : 'INACTIVO' }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 text-xs text-slate-500">{{ emp.createdAt | date:'dd/MM/yyyy' }}</td>
-                  <td class="px-4 py-3 text-right">
-                    <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button (click)="$event.stopPropagation(); viewDetail(emp)"
-                        class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Ver detalle">
-                        <span class="material-icons text-base">visibility</span>
-                      </button>
-                      <button (click)="$event.stopPropagation(); editEmpresa(emp)"
-                        class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Editar">
-                        <span class="material-icons text-base">edit</span>
-                      </button>
-                      <button (click)="$event.stopPropagation(); confirmDelete(emp)"
-                        class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all" title="Eliminar">
-                        <span class="material-icons text-base">delete_outline</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+      <!-- ==================== DESKTOP VIEW ==================== -->
+      <div class="hidden md:flex flex-col flex-1 min-h-0 gap-4">
+        <!-- Toolbar -->
+        <div class="flex flex-col lg:flex-row justify-between gap-4 bg-white p-4 rounded border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-3">
+            <h1 class="text-lg font-bold tracking-tight text-slate-800 uppercase">Gestión de Empresas</h1>
+            <span class="text-xs text-slate-400">{{ empresas().length }} empresas</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
+              <input type="checkbox" [(ngModel)]="showInactive" (ngModelChange)="loadEmpresas()" class="rounded border-slate-300 text-primary focus:ring-primary/30"> Mostrar inactivas
+            </label>
+            <button (click)="openForm()" class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded flex items-center gap-2 font-semibold text-xs transition-all shadow-sm uppercase tracking-wide">
+              <span class="material-icons text-sm">add</span> Nueva Empresa
+            </button>
+          </div>
         </div>
 
-        @if (empresas().length === 0 && !loading()) {
-          <div class="flex flex-col items-center justify-center py-20 text-slate-400">
-            <span class="material-icons text-4xl mb-2">business</span>
-            <p class="text-sm font-medium">No hay empresas registradas</p>
+        <!-- Desktop Table -->
+        <div class="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex-1">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50">
+                  <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Empresa</th>
+                  <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipo</th>
+                  <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Código FSM</th>
+                  <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Usuarios</th>
+                  <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                  <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Creación</th>
+                  <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (emp of empresas(); track emp.id) {
+                  <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" (click)="viewDetail(emp)">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs shrink-0" [ngClass]="emp.type === 'PROPIA' ? 'bg-purple-500' : 'bg-teal-500'">
+                          <span class="material-icons text-base">{{ emp.type === 'PROPIA' ? 'apartment' : 'handshake' }}</span>
+                        </div>
+                        <div><p class="text-sm font-semibold text-slate-800">{{ emp.name }}</p><p class="text-[10px] text-slate-400 font-mono">ID: {{ emp.id }}</p></div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" [ngClass]="emp.type === 'PROPIA' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700'">{{ emp.type }}</span></td>
+                    <td class="px-4 py-3 text-xs text-slate-600 font-mono">{{ emp.codigoFSM || '—' }}</td>
+                    <td class="px-4 py-3 text-center"><span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-xs font-semibold text-slate-600"><span class="material-icons text-xs">people</span> {{ emp.userCount || 0 }}</span></td>
+                    <td class="px-4 py-3 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="emp.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'">{{ emp.active ? 'ACTIVO' : 'INACTIVO' }}</span></td>
+                    <td class="px-4 py-3 text-xs text-slate-500">{{ emp.createdAt | date:'dd/MM/yyyy' }}</td>
+                    <td class="px-4 py-3 text-right">
+                      <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button (click)="$event.stopPropagation(); viewDetail(emp)" class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Ver detalle"><span class="material-icons text-base">visibility</span></button>
+                        <button (click)="$event.stopPropagation(); editEmpresa(emp)" class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Editar"><span class="material-icons text-base">edit</span></button>
+                        <button (click)="$event.stopPropagation(); confirmDelete(emp)" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all" title="Eliminar"><span class="material-icons text-base">delete_outline</span></button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
-        }
+          @if (empresas().length === 0 && !loading()) {
+            <div class="flex flex-col items-center justify-center py-20 text-slate-400"><span class="material-icons text-4xl mb-2">business</span><p class="text-sm font-medium">No hay empresas registradas</p></div>
+          }
+          @if (loading()) {
+            <div class="flex items-center justify-center py-20"><span class="material-icons text-primary text-3xl animate-spin">autorenew</span></div>
+          }
+        </div>
+      </div>
 
-        @if (loading()) {
-          <div class="flex items-center justify-center py-20">
-            <span class="material-icons text-primary text-3xl animate-spin">autorenew</span>
+      <!-- ==================== MOBILE VIEW ==================== -->
+      <div class="flex md:hidden flex-col flex-1 min-h-0 relative">
+        <!-- Mobile Header -->
+        <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 pt-3 pb-2">
+          <div class="flex items-center justify-between mb-1">
+            <h1 class="text-lg font-bold tracking-tight text-slate-800 flex items-center gap-2">
+              <span class="material-icons text-primary text-xl">business</span> Empresas
+            </h1>
+            <div class="flex items-center space-x-1">
+              <button (click)="mobileFilterOpen.set(!mobileFilterOpen())" class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative">
+                <span class="material-icons text-xl">tune</span>
+                @if (showInactive) { <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-white"></span> }
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">{{ empresas().length }} empresas</p>
+        </header>
+
+        <!-- Mobile Empresa Cards -->
+        <main class="flex-1 overflow-y-auto px-4 py-3 space-y-3 hide-scrollbar pb-24">
+          @if (loading()) {
+            <div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div></div>
+          } @else if (empresas().length === 0) {
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+              <span class="material-icons text-5xl text-slate-300 mb-3">business</span>
+              <p class="font-semibold text-slate-600">No hay empresas registradas</p>
+            </div>
+          } @else {
+            @for (emp of empresas(); track emp.id) {
+              <div (click)="viewDetail(emp)" class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0" [ngClass]="emp.type === 'PROPIA' ? 'bg-purple-500' : 'bg-teal-500'">
+                    <span class="material-icons text-lg">{{ emp.type === 'PROPIA' ? 'apartment' : 'handshake' }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-sm font-bold text-slate-800 truncate">{{ emp.name }}</h3>
+                    <p class="text-[10px] text-slate-400 font-mono">ID: {{ emp.id }}</p>
+                  </div>
+                  <span class="material-icons text-slate-300 text-lg shrink-0">chevron_right</span>
+                </div>
+                <div class="flex items-center flex-wrap gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="emp.type === 'PROPIA' ? 'bg-purple-50 text-purple-700' : 'bg-teal-50 text-teal-700'">{{ emp.type }}</span>
+                  @if (emp.codigoFSM) { <span class="text-[10px] text-slate-400 font-mono">FSM: {{ emp.codigoFSM }}</span> }
+                  <span class="inline-flex items-center gap-0.5 px-2 py-0.5 bg-slate-100 rounded-full text-[10px] font-semibold text-slate-600"><span class="material-icons text-[10px]">people</span> {{ emp.userCount || 0 }}</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ml-auto" [ngClass]="emp.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'">{{ emp.active ? 'ACTIVO' : 'INACTIVO' }}</span>
+                </div>
+              </div>
+            }
+          }
+        </main>
+
+        <!-- FAB -->
+        <button (click)="openForm()" class="fixed bottom-20 right-5 md:hidden w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 z-30">
+          <span class="material-icons text-3xl">add</span>
+        </button>
+
+        <!-- Mobile Filter Bottom Sheet -->
+        @if (mobileFilterOpen()) {
+          <div (click)="mobileFilterOpen.set(false)" class="fixed inset-0 bg-black/40 z-40 md:hidden"></div>
+          <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 md:hidden max-h-[60vh] overflow-y-auto animate-slide-up">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-4"></div>
+            <div class="px-6 pb-8">
+              <h2 class="text-lg font-bold mb-5">Opciones</h2>
+              <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer select-none">
+                <input type="checkbox" [(ngModel)]="showInactive" (ngModelChange)="loadEmpresas()" class="rounded border-slate-300 text-primary focus:ring-primary/30 w-5 h-5">
+                <span class="text-sm font-medium text-slate-700">Mostrar empresas inactivas</span>
+              </label>
+              <button (click)="mobileFilterOpen.set(false)" class="w-full mt-4 py-3.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Cerrar</button>
+            </div>
           </div>
         }
       </div>
@@ -397,7 +416,13 @@ import { environment } from '../../../../environments/environment';
         </div>
       }
     </div>
-  `
+  `,
+  styles: [`
+    .hide-scrollbar::-webkit-scrollbar { display: none }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none }
+    @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .animate-slide-up { animation: slide-up 0.3s ease-out; }
+  `]
 })
 export class EmpresaListComponent implements OnInit {
   private http = inject(HttpClient);
@@ -413,6 +438,7 @@ export class EmpresaListComponent implements OnInit {
   empresaToDelete = signal<Empresa | null>(null);
   deleteError = signal('');
   showInactive = false;
+  mobileFilterOpen = signal(false);
 
   formData = { name: '', type: 'CAS', codigoFSM: '', active: true };
 

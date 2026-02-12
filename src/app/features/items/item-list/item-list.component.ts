@@ -48,274 +48,333 @@ interface ItemFilters {
     imports: [CommonModule, FormsModule, DrawerComponent],
     template: `
     <div class="flex flex-col h-full gap-4">
-      <!-- KPI Cards -->
+      <!-- KPI Cards (responsive: 2 cols mobile, 4 desktop) -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <span class="material-icons text-primary text-xl">inventory_2</span>
+        <div class="bg-white rounded-xl border border-slate-200 p-3 md:p-4 shadow-sm">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <span class="material-icons text-primary text-lg md:text-xl">inventory_2</span>
             </div>
             <div>
-              <p class="text-2xl font-bold text-slate-800">{{ stats()?.total | number }}</p>
-              <p class="text-[11px] text-slate-400 font-medium">Total Items</p>
+              <p class="text-xl md:text-2xl font-bold text-slate-800">{{ stats()?.total | number }}</p>
+              <p class="text-[10px] md:text-[11px] text-slate-400 font-medium">Total Items</p>
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <span class="material-icons text-emerald-600 text-xl">check_circle</span>
+        <div class="bg-white rounded-xl border border-slate-200 p-3 md:p-4 shadow-sm">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <span class="material-icons text-emerald-600 text-lg md:text-xl">check_circle</span>
             </div>
             <div>
-              <p class="text-2xl font-bold text-slate-800">{{ stats()?.activos | number }}</p>
-              <p class="text-[11px] text-slate-400 font-medium">Activos</p>
+              <p class="text-xl md:text-2xl font-bold text-slate-800">{{ stats()?.activos | number }}</p>
+              <p class="text-[10px] md:text-[11px] text-slate-400 font-medium">Activos</p>
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-              <span class="material-icons text-amber-600 text-xl">category</span>
+        <div class="bg-white rounded-xl border border-slate-200 p-3 md:p-4 shadow-sm">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <span class="material-icons text-amber-600 text-lg md:text-xl">category</span>
             </div>
             <div>
-              <p class="text-2xl font-bold text-slate-800">{{ stats()?.categorias }}</p>
-              <p class="text-[11px] text-slate-400 font-medium">Categorías</p>
+              <p class="text-xl md:text-2xl font-bold text-slate-800">{{ stats()?.categorias }}</p>
+              <p class="text-[10px] md:text-[11px] text-slate-400 font-medium">Categorías</p>
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-              <span class="material-icons text-blue-600 text-xl">handyman</span>
+        <div class="bg-white rounded-xl border border-slate-200 p-3 md:p-4 shadow-sm">
+          <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <span class="material-icons text-blue-600 text-lg md:text-xl">handyman</span>
             </div>
             <div>
-              <p class="text-2xl font-bold text-slate-800">{{ stats()?.servicios }}</p>
-              <p class="text-[11px] text-slate-400 font-medium">Servicios</p>
+              <p class="text-xl md:text-2xl font-bold text-slate-800">{{ stats()?.servicios }}</p>
+              <p class="text-[10px] md:text-[11px] text-slate-400 font-medium">Servicios</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Toolbar -->
-      <div class="flex flex-col lg:flex-row justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <div class="flex items-center gap-3 flex-1">
-          <h1 class="text-lg font-bold tracking-tight text-slate-800 flex items-center gap-2">
-            <span class="material-icons text-primary">inventory_2</span>
-            Catálogo de Items
-          </h1>
-          <div class="flex-1 max-w-md relative">
-            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-            <input 
-              [(ngModel)]="searchQuery"
-              (input)="onSearchInput()"
-              class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg text-sm transition-all outline-none text-slate-800" 
-              placeholder="Buscar por código, nombre o categoría..." 
-              type="text"
-            />
+      <!-- ==================== DESKTOP VIEW ==================== -->
+      <div class="hidden md:flex flex-col flex-1 min-h-0 gap-4">
+        <!-- Toolbar -->
+        <div class="flex flex-col lg:flex-row justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-3 flex-1">
+            <h1 class="text-lg font-bold tracking-tight text-slate-800 flex items-center gap-2">
+              <span class="material-icons text-primary">inventory_2</span>
+              Catálogo de Items
+            </h1>
+            <div class="flex-1 max-w-md relative">
+              <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+              <input [(ngModel)]="searchQuery" (input)="onSearchInput()"
+                class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg text-sm transition-all outline-none text-slate-800" 
+                placeholder="Buscar por código, nombre o categoría..." type="text" />
+            </div>
           </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button (click)="loadItems()" class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all" title="Actualizar">
-            <span class="material-icons text-xl">refresh</span>
-          </button>
-          <button (click)="openForm()"
-            class="px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wide rounded-lg shadow-sm transition-all flex items-center gap-1.5">
-            <span class="material-icons text-sm">add</span>
-            Nuevo Item
-          </button>
-        </div>
-      </div>
-
-      <!-- Filters Bar -->
-      <div class="bg-white px-4 py-3 border border-slate-200 rounded-xl shadow-sm">
-        <div class="flex flex-wrap items-center gap-3">
-          <span class="text-xs font-bold text-slate-400 uppercase mr-1 flex items-center gap-1">
-            <span class="material-icons text-sm">filter_list</span>
-            Filtros:
-          </span>
-          
-          <!-- Categoría -->
-          <select 
-            [(ngModel)]="categoriaFilter"
-            (change)="onFilterChange()"
-            class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[180px] text-slate-700 font-medium"
-          >
-            <option value="">Categoría: Todas</option>
-            @for (cat of filters()?.categorias || []; track cat) {
-              <option [value]="cat">{{ cat }}</option>
-            }
-          </select>
-
-          <!-- Tipo -->
-          <select 
-            [(ngModel)]="tipoFilter"
-            (change)="onFilterChange()"
-            class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[120px] text-slate-700 font-medium"
-          >
-            <option value="">Tipo: Todos</option>
-            @for (u of filters()?.tipos || []; track u) {
-              <option [value]="u">{{ u }}</option>
-            }
-          </select>
-
-          <!-- Estado -->
-          <select 
-            [(ngModel)]="estadoFilter"
-            (change)="onFilterChange()"
-            class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[120px] text-slate-700 font-medium"
-          >
-            <option value="">Estado: Todos</option>
-            @for (e of filters()?.estados || []; track e) {
-              <option [value]="e">{{ e }}</option>
-            }
-          </select>
-
-          <!-- Sector -->
-          <select 
-            [(ngModel)]="sectorFilter"
-            (change)="onFilterChange()"
-            class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[100px] text-slate-700 font-medium"
-          >
-            <option value="">Sector: Todos</option>
-            @for (s of filters()?.sectores || []; track s) {
-              <option [value]="s">{{ s }}</option>
-            }
-          </select>
-
-          @if (hasActiveFilters()) {
-            <button (click)="clearFilters()" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1 px-2 py-1 hover:bg-red-50 rounded-lg transition-all">
-              <span class="material-icons text-sm">close</span>
-              Limpiar
+          <div class="flex items-center gap-2">
+            <button (click)="loadItems()" class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all" title="Actualizar">
+              <span class="material-icons text-xl">refresh</span>
             </button>
-          }
-
-          <!-- Showing count -->
-          <div class="ml-auto text-xs text-slate-400 font-medium">
-            {{ totalItems() | number }} items encontrados
+            <button (click)="openForm()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold text-xs uppercase tracking-wide rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+              <span class="material-icons text-sm">add</span> Nuevo Item
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- Table -->
-      <div class="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div class="overflow-x-auto flex-1">
-          <table class="w-full">
-            <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-              <tr>
-                @for (col of columns; track col.key) {
-                  <th 
-                    (click)="toggleSort(col.key)"
-                    class="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 transition-colors"
-                    [class.text-primary]="sortBy() === col.key"
-                    [class.text-slate-400]="sortBy() !== col.key"
-                  >
-                    <div class="flex items-center gap-1">
-                      {{ col.label }}
-                      @if (sortBy() === col.key) {
-                        <span class="material-icons text-xs">{{ sortDir() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
-                      }
-                    </div>
-                  </th>
-                }
-                <th class="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 w-16">
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (loading()) {
+        <!-- Filters Bar -->
+        <div class="bg-white px-4 py-3 border border-slate-200 rounded-xl shadow-sm">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="text-xs font-bold text-slate-400 uppercase mr-1 flex items-center gap-1">
+              <span class="material-icons text-sm">filter_list</span> Filtros:
+            </span>
+            <select [(ngModel)]="categoriaFilter" (change)="onFilterChange()"
+              class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[180px] text-slate-700 font-medium">
+              <option value="">Categoría: Todas</option>
+              @for (cat of filters()?.categorias || []; track cat) { <option [value]="cat">{{ cat }}</option> }
+            </select>
+            <select [(ngModel)]="tipoFilter" (change)="onFilterChange()"
+              class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[120px] text-slate-700 font-medium">
+              <option value="">Tipo: Todos</option>
+              @for (u of filters()?.tipos || []; track u) { <option [value]="u">{{ u }}</option> }
+            </select>
+            <select [(ngModel)]="estadoFilter" (change)="onFilterChange()"
+              class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[120px] text-slate-700 font-medium">
+              <option value="">Estado: Todos</option>
+              @for (e of filters()?.estados || []; track e) { <option [value]="e">{{ e }}</option> }
+            </select>
+            <select [(ngModel)]="sectorFilter" (change)="onFilterChange()"
+              class="text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary py-2 px-3 min-w-[100px] text-slate-700 font-medium">
+              <option value="">Sector: Todos</option>
+              @for (s of filters()?.sectores || []; track s) { <option [value]="s">{{ s }}</option> }
+            </select>
+            @if (hasActiveFilters()) {
+              <button (click)="clearFilters()" class="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1 px-2 py-1 hover:bg-red-50 rounded-lg transition-all">
+                <span class="material-icons text-sm">close</span> Limpiar
+              </button>
+            }
+            <div class="ml-auto text-xs text-slate-400 font-medium">{{ totalItems() | number }} items encontrados</div>
+          </div>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full">
+              <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                 <tr>
-                  <td [attr.colspan]="columns.length + 1" class="text-center py-20">
+                  @for (col of columns; track col.key) {
+                    <th (click)="toggleSort(col.key)"
+                      class="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                      [class.text-primary]="sortBy() === col.key" [class.text-slate-400]="sortBy() !== col.key">
+                      <div class="flex items-center gap-1">{{ col.label }}
+                        @if (sortBy() === col.key) { <span class="material-icons text-xs">{{ sortDir() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span> }
+                      </div>
+                    </th>
+                  }
+                  <th class="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 w-16"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (loading()) {
+                  <tr><td [attr.colspan]="columns.length + 1" class="text-center py-20">
                     <div class="flex flex-col items-center gap-2 text-slate-400">
                       <span class="material-icons animate-spin text-3xl text-primary">progress_activity</span>
                       <span class="text-sm">Cargando items...</span>
                     </div>
-                  </td>
-                </tr>
-              } @else if (items().length === 0) {
-                <tr>
-                  <td [attr.colspan]="columns.length + 1" class="text-center py-20">
+                  </td></tr>
+                } @else if (items().length === 0) {
+                  <tr><td [attr.colspan]="columns.length + 1" class="text-center py-20">
                     <div class="flex flex-col items-center gap-2 text-slate-400">
                       <span class="material-icons text-4xl">inventory_2</span>
                       <span class="text-sm font-medium">No se encontraron items</span>
-                      <span class="text-xs">Intente con otros filtros</span>
                     </div>
-                  </td>
-                </tr>
-              } @else {
-                @for (item of items(); track item.id) {
-                  <tr
-                    (click)="openDetail(item)"
-                    class="border-b border-slate-100 hover:bg-blue-50/40 transition-colors cursor-pointer group"
-                  >
-                    <td class="px-4 py-3">
-                      <span class="text-xs font-mono font-bold text-primary bg-primary/5 px-2 py-0.5 rounded">{{ item.codigoSAP }}</span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="text-xs font-mono text-slate-600">{{ item.codigoExterno || '—' }}</span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="text-sm font-medium text-slate-800 truncate block max-w-[300px]" [title]="item.nombre">{{ item.nombre }}</span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="text-xs text-slate-500 truncate block max-w-[200px]" [title]="item.categoria">{{ item.categoria || '—' }}</span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="text-xs px-2 py-0.5 rounded-full font-medium"
-                        [class]="item.tipo === 'Pieza' ? 'bg-blue-50 text-blue-700' : item.tipo === 'Servicio' ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'">
-                        {{ item.tipo || '—' }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <div class="flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full" [class]="item.estado === 'Activo' ? 'bg-emerald-500' : 'bg-red-400'"></span>
-                        <span class="text-xs font-medium" [class]="item.estado === 'Activo' ? 'text-emerald-700' : 'text-red-500'">{{ item.estado || '—' }}</span>
-                      </div>
-                    </td>
-                    <td class="px-4 py-3">
-                      <span class="text-xs text-slate-500">{{ item.sector || '—' }}</span>
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                      <button class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-primary rounded transition-all">
-                        <span class="material-icons text-lg">chevron_right</span>
-                      </button>
-                    </td>
-                  </tr>
+                  </td></tr>
+                } @else {
+                  @for (item of items(); track item.id) {
+                    <tr (click)="openDetail(item)" class="border-b border-slate-100 hover:bg-blue-50/40 transition-colors cursor-pointer group">
+                      <td class="px-4 py-3"><span class="text-xs font-mono font-bold text-primary bg-primary/5 px-2 py-0.5 rounded">{{ item.codigoSAP }}</span></td>
+                      <td class="px-4 py-3"><span class="text-xs font-mono text-slate-600">{{ item.codigoExterno || '—' }}</span></td>
+                      <td class="px-4 py-3"><span class="text-sm font-medium text-slate-800 truncate block max-w-[300px]" [title]="item.nombre">{{ item.nombre }}</span></td>
+                      <td class="px-4 py-3"><span class="text-xs text-slate-500 truncate block max-w-[200px]" [title]="item.categoria">{{ item.categoria || '—' }}</span></td>
+                      <td class="px-4 py-3">
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium" [class]="item.tipo === 'Pieza' ? 'bg-blue-50 text-blue-700' : item.tipo === 'Servicio' ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'">{{ item.tipo || '—' }}</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full" [class]="item.estado === 'Activo' ? 'bg-emerald-500' : 'bg-red-400'"></span>
+                          <span class="text-xs font-medium" [class]="item.estado === 'Activo' ? 'text-emerald-700' : 'text-red-500'">{{ item.estado || '—' }}</span>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3"><span class="text-xs text-slate-500">{{ item.sector || '—' }}</span></td>
+                      <td class="px-4 py-3 text-right">
+                        <button class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-primary rounded transition-all">
+                          <span class="material-icons text-lg">chevron_right</span>
+                        </button>
+                      </td>
+                    </tr>
+                  }
                 }
-              }
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
+          <!-- Desktop Pagination -->
+          <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500">Filas por página:</span>
+              <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="text-xs border border-slate-200 rounded-lg py-1 px-2 bg-white text-slate-700">
+                <option [value]="10">10</option><option [value]="25">25</option><option [value]="50">50</option><option [value]="100">100</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-slate-500 mr-2">{{ ((currentPage() - 1) * pageSize) + 1 }}–{{ currentPage() * pageSize > totalItems() ? totalItems() : currentPage() * pageSize }} de {{ totalItems() | number }}</span>
+              <button (click)="goToPage(1)" [disabled]="currentPage() <= 1" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"><span class="material-icons text-lg text-slate-500">first_page</span></button>
+              <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() <= 1" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"><span class="material-icons text-lg text-slate-500">chevron_left</span></button>
+              <span class="text-xs font-bold text-slate-700 px-2">{{ currentPage() }}</span>
+              <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages()" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"><span class="material-icons text-lg text-slate-500">chevron_right</span></button>
+              <button (click)="goToPage(totalPages())" [disabled]="currentPage() >= totalPages()" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"><span class="material-icons text-lg text-slate-500">last_page</span></button>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Pagination -->
-        <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50">
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-500">Filas por página:</span>
-            <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="text-xs border border-slate-200 rounded-lg py-1 px-2 bg-white text-slate-700">
-              <option [value]="10">10</option>
-              <option [value]="25">25</option>
-              <option [value]="50">50</option>
-              <option [value]="100">100</option>
-            </select>
+      <!-- ==================== MOBILE VIEW ==================== -->
+      <div class="flex md:hidden flex-col flex-1 min-h-0 relative">
+        <!-- Mobile Header -->
+        <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 pt-3 pb-2">
+          <div class="flex items-center justify-between mb-2">
+            <h1 class="text-lg font-bold tracking-tight text-slate-800 flex items-center gap-2">
+              <span class="material-icons text-primary text-xl">inventory_2</span> Items
+            </h1>
+            <div class="flex items-center space-x-1">
+              <button (click)="mobileSearchOpen.set(!mobileSearchOpen())" class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+                <span class="material-icons text-xl">search</span>
+              </button>
+              <button (click)="mobileFilterOpen.set(!mobileFilterOpen())" class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative">
+                <span class="material-icons text-xl">tune</span>
+                @if (hasActiveFilters()) { <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-white"></span> }
+              </button>
+            </div>
           </div>
-          <div class="flex items-center gap-1">
-            <span class="text-xs text-slate-500 mr-2">
-              {{ ((currentPage() - 1) * pageSize) + 1 }}–{{ currentPage() * pageSize > totalItems() ? totalItems() : currentPage() * pageSize }} de {{ totalItems() | number }}
-            </span>
-            <button (click)="goToPage(1)" [disabled]="currentPage() <= 1" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-              <span class="material-icons text-lg text-slate-500">first_page</span>
-            </button>
-            <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() <= 1" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-              <span class="material-icons text-lg text-slate-500">chevron_left</span>
-            </button>
-            <span class="text-xs font-bold text-slate-700 px-2">{{ currentPage() }}</span>
-            <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages()" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-              <span class="material-icons text-lg text-slate-500">chevron_right</span>
-            </button>
-            <button (click)="goToPage(totalPages())" [disabled]="currentPage() >= totalPages()" class="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-              <span class="material-icons text-lg text-slate-500">last_page</span>
-            </button>
+          @if (mobileSearchOpen()) {
+            <div class="mb-2">
+              <div class="relative">
+                <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input [(ngModel)]="searchQuery" (input)="onSearchInput()"
+                  class="w-full pl-10 pr-10 py-2.5 bg-slate-100 border-transparent focus:bg-white focus:border-primary focus:ring-0 rounded-xl text-sm transition-all outline-none"
+                  placeholder="Buscar items..." type="text" />
+                @if (searchQuery) {
+                  <button (click)="searchQuery = ''; onSearchInput()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><span class="material-icons text-lg">close</span></button>
+                }
+              </div>
+            </div>
+          }
+          <!-- Quick Type Filter Pills -->
+          <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+            <button (click)="tipoFilter = ''; onFilterChange()" class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+              [class.bg-primary]="!tipoFilter" [class.text-white]="!tipoFilter" [class.bg-slate-100]="tipoFilter" [class.text-slate-600]="tipoFilter">Todos</button>
+            <button (click)="tipoFilter = 'Pieza'; onFilterChange()" class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+              [class.bg-primary]="tipoFilter === 'Pieza'" [class.text-white]="tipoFilter === 'Pieza'" [class.bg-slate-100]="tipoFilter !== 'Pieza'" [class.text-slate-600]="tipoFilter !== 'Pieza'">Piezas</button>
+            <button (click)="tipoFilter = 'Servicio'; onFilterChange()" class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+              [class.bg-primary]="tipoFilter === 'Servicio'" [class.text-white]="tipoFilter === 'Servicio'" [class.bg-slate-100]="tipoFilter !== 'Servicio'" [class.text-slate-600]="tipoFilter !== 'Servicio'">Servicios</button>
+            <button (click)="estadoFilter = estadoFilter === 'Activo' ? '' : 'Activo'; onFilterChange()" class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+              [class.bg-emerald-500]="estadoFilter === 'Activo'" [class.text-white]="estadoFilter === 'Activo'" [class.bg-slate-100]="estadoFilter !== 'Activo'" [class.text-slate-600]="estadoFilter !== 'Activo'">Activos</button>
           </div>
-        </div>
+        </header>
+
+        <!-- Mobile Item Cards -->
+        <main class="flex-1 overflow-y-auto px-4 py-3 space-y-3 hide-scrollbar pb-24">
+          @if (loading()) {
+            <div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div></div>
+          } @else if (items().length === 0) {
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+              <span class="material-icons text-5xl text-slate-300 mb-3">inventory_2</span>
+              <p class="font-semibold text-slate-600">No se encontraron items</p>
+              <button (click)="clearFilters()" class="mt-3 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium">Limpiar filtros</button>
+            </div>
+          } @else {
+            @for (item of items(); track item.id) {
+              <div (click)="openDetail(item)" class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer">
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex-1 min-w-0">
+                    <span class="text-[10px] font-mono font-bold text-primary bg-primary/5 px-1.5 py-0.5 rounded">{{ item.codigoSAP }}</span>
+                    <h3 class="text-sm font-bold text-slate-800 truncate mt-1">{{ item.nombre }}</h3>
+                    <p class="text-xs text-slate-400 truncate mt-0.5">{{ item.categoria || 'Sin categoría' }}</p>
+                  </div>
+                  <span class="ml-2 shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full"
+                    [class]="item.tipo === 'Pieza' ? 'bg-blue-50 text-blue-700' : item.tipo === 'Servicio' ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'">
+                    {{ item.tipo }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full" [class]="item.estado === 'Activo' ? 'bg-emerald-500' : 'bg-red-400'"></span>
+                    <span class="text-xs font-medium" [class]="item.estado === 'Activo' ? 'text-emerald-700' : 'text-red-500'">{{ item.estado }}</span>
+                  </div>
+                  @if (item.sector) { <span class="text-xs text-slate-400">{{ item.sector }}</span> }
+                  <span class="material-icons text-slate-300 text-lg">chevron_right</span>
+                </div>
+              </div>
+            }
+            <!-- Mobile Pagination -->
+            @if (totalPages() > 1) {
+              <div class="flex items-center justify-center gap-3 py-4">
+                <button [disabled]="currentPage() <= 1" (click)="goToPage(currentPage() - 1)"
+                  class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium disabled:opacity-40 flex items-center gap-1">
+                  <span class="material-icons text-base">chevron_left</span> Anterior
+                </button>
+                <span class="text-xs text-slate-500 font-medium">{{ currentPage() }} / {{ totalPages() }}</span>
+                <button [disabled]="currentPage() >= totalPages()" (click)="goToPage(currentPage() + 1)"
+                  class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium disabled:opacity-40 flex items-center gap-1">
+                  Siguiente <span class="material-icons text-base">chevron_right</span>
+                </button>
+              </div>
+            }
+          }
+        </main>
+
+        <!-- FAB -->
+        <button (click)="openForm()" class="fixed bottom-20 right-5 md:hidden w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 z-30">
+          <span class="material-icons text-3xl">add</span>
+        </button>
+
+        <!-- Mobile Filter Bottom Sheet -->
+        @if (mobileFilterOpen()) {
+          <div (click)="mobileFilterOpen.set(false)" class="fixed inset-0 bg-black/40 z-40 md:hidden"></div>
+          <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 md:hidden max-h-[75vh] overflow-y-auto animate-slide-up">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-4"></div>
+            <div class="px-6 pb-8">
+              <h2 class="text-lg font-bold mb-5">Filtros</h2>
+              <div class="space-y-5">
+                <div>
+                  <label class="block text-sm font-semibold mb-2 text-slate-700">Categoría</label>
+                  <select [(ngModel)]="categoriaFilter" class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                    <option value="">Todas las Categorías</option>
+                    @for (cat of filters()?.categorias || []; track cat) { <option [value]="cat">{{ cat }}</option> }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold mb-2 text-slate-700">Estado</label>
+                  <select [(ngModel)]="estadoFilter" class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                    <option value="">Todos los Estados</option>
+                    @for (e of filters()?.estados || []; track e) { <option [value]="e">{{ e }}</option> }
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold mb-2 text-slate-700">Sector</label>
+                  <select [(ngModel)]="sectorFilter" class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                    <option value="">Todos los Sectores</option>
+                    @for (s of filters()?.sectores || []; track s) { <option [value]="s">{{ s }}</option> }
+                  </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                  <button (click)="clearFilters(); mobileFilterOpen.set(false)" class="flex-1 py-3.5 bg-slate-100 text-slate-600 font-semibold rounded-xl">Limpiar</button>
+                  <button (click)="onFilterChange(); mobileFilterOpen.set(false)" class="flex-[2] py-3.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Aplicar Filtros</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
 
       <!-- Detail Drawer -->
@@ -686,7 +745,13 @@ interface ItemFilters {
         </div>
       }
     </div>
-  `
+  `,
+  styles: [`
+    .hide-scrollbar::-webkit-scrollbar { display: none }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none }
+    @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .animate-slide-up { animation: slide-up 0.3s ease-out; }
+  `]
 })
 export class ItemListComponent implements OnInit, OnDestroy {
     private http = inject(HttpClient);
@@ -730,6 +795,10 @@ export class ItemListComponent implements OnInit, OnDestroy {
         unidadMedida: 'Unidad', tipo: 'Pieza', estado: 'Activo', activo: true,
         sector: '', garantia: '', descuento: 0, estadoEnCatalogo: ''
     };
+
+    // Mobile
+    mobileSearchOpen = signal(false);
+    mobileFilterOpen = signal(false);
 
     // Delete
     showDeleteConfirm = signal(false);

@@ -40,9 +40,34 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
 
         <!-- Filters Bar -->
         <div class="bg-white px-4 py-3 border border-slate-200 rounded shadow-sm">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-bold text-slate-400 uppercase mr-1">Filtros:</span>
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <button (click)="filtersExpanded.set(!filtersExpanded())" 
+                class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded transition-colors"
+                [class.bg-primary]="hasActiveFilters()" [class.text-white]="hasActiveFilters()"
+                [class.text-slate-500]="!hasActiveFilters()" [class.hover:bg-slate-100]="!hasActiveFilters()">
+                <span class="material-icons text-sm">tune</span>
+                Filtros
+                @if (hasActiveFilters()) {
+                  <span class="w-5 h-5 bg-white/20 rounded-full text-[10px] flex items-center justify-center font-bold">{{ activeFilterCount() }}</span>
+                }
+                <span class="material-icons text-sm transition-transform" [class.rotate-180]="filtersExpanded()">expand_more</span>
+              </button>
+              @if (hasActiveFilters()) {
+                <button (click)="clearFilters()" class="text-[10px] text-slate-500 hover:text-primary font-bold px-2 py-1 uppercase tracking-tighter">
+                  <span class="material-icons text-xs align-text-bottom">refresh</span> Reset
+                </button>
+              }
+            </div>
+            <div class="flex items-center gap-1">
+              <button (click)="exportCSV()" class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Exportar CSV">
+                <span class="material-icons text-lg">file_download</span>
+              </button>
+            </div>
+          </div>
+
+          @if (filtersExpanded()) {
+            <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100">
               <select [(ngModel)]="statusFilter" (change)="onFilterChange()"
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 min-w-[120px] text-slate-700 font-medium">
                 <option value="">Estado: Todos</option>
@@ -65,6 +90,18 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[100px] text-slate-700 font-medium" />
               <input [(ngModel)]="empresaFilter" (ngModelChange)="onTextFilterChange()" placeholder="Empresa..."
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[130px] text-slate-700 font-medium" />
+              <select [(ngModel)]="visitaFilter" (change)="onFilterChange()"
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 min-w-[110px] text-slate-700 font-medium">
+                <option value="">Visita: Todos</option>
+                <option value="1">Sí</option>
+                <option value="0">No</option>
+              </select>
+              <select [(ngModel)]="trabajoFilter" (change)="onFilterChange()"
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 min-w-[110px] text-slate-700 font-medium">
+                <option value="">Trabajo: Todos</option>
+                <option value="1">Sí</option>
+                <option value="0">No</option>
+              </select>
               <div class="flex items-center gap-1">
                 <span class="text-[10px] text-slate-400 font-bold">Desde:</span>
                 <input type="date" [(ngModel)]="fechaDesde" (change)="onFilterChange()"
@@ -75,20 +112,8 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                 <input type="date" [(ngModel)]="fechaHasta" (change)="onFilterChange()"
                   class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 text-slate-700 font-medium" />
               </div>
-              <button (click)="clearFilters()"
-                class="text-[10px] text-slate-500 hover:text-primary font-bold px-3 py-1.5 uppercase tracking-tighter border border-slate-200 rounded hover:bg-slate-50 transition-colors">
-                <span class="material-icons text-xs align-text-bottom mr-0.5">refresh</span> Reset
-              </button>
             </div>
-            <div class="flex items-center gap-1 border-l border-slate-200 pl-4">
-              <button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Export CSV">
-                <span class="material-icons text-lg">file_download</span>
-              </button>
-              <button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="Print">
-                <span class="material-icons text-lg">print</span>
-              </button>
-            </div>
-          </div>
+          }
         </div>
 
         <!-- Desktop Table Content -->
@@ -146,6 +171,7 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                         </span>
                       </th>
                       <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Visita</th>
+                      <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Trabajo</th>
                       <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right cursor-pointer hover:bg-slate-100 select-none" (click)="sortBy('FechaVisita')">
                         <span class="inline-flex items-center gap-1">Fecha
                         @if (sortColumn === 'FechaVisita') { <span class="material-icons text-xs">{{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span> }
@@ -182,6 +208,17 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                         </td>
                         <td class="px-4 py-2.5 text-center">
                           @if(ticket.VisitaRealizada) {
+                            <div class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100">
+                              <span class="material-icons text-green-600" style="font-size: 14px;">check</span>
+                            </div>
+                          } @else {
+                            <div class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100">
+                              <span class="material-icons text-slate-400" style="font-size: 14px;">remove</span>
+                            </div>
+                          }
+                        </td>
+                        <td class="px-4 py-2.5 text-center">
+                          @if(ticket.TrabajoRealizado) {
                             <div class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100">
                               <span class="material-icons text-green-600" style="font-size: 14px;">check</span>
                             </div>
@@ -436,6 +473,27 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
 
                 <div class="grid grid-cols-2 gap-3">
                   <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700">Visita Realizada</label>
+                    <select [(ngModel)]="visitaFilter"
+                      class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                      <option value="">Todos</option>
+                      <option value="1">Sí</option>
+                      <option value="0">No</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700">Trabajo Realizado</label>
+                    <select [(ngModel)]="trabajoFilter"
+                      class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                      <option value="">Todos</option>
+                      <option value="1">Sí</option>
+                      <option value="0">No</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
                     <label class="block text-sm font-semibold mb-2 text-slate-700">Desde</label>
                     <input type="date" [(ngModel)]="fechaDesde"
                       class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
@@ -511,6 +569,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
   telefonoFilter = '';
   distritoFilter = '';
   codigoPostalFilter = '';
+  visitaFilter = '';
+  trabajoFilter = '';
   fechaDesde = '';
   fechaHasta = '';
   currentPage = 1;
@@ -527,9 +587,14 @@ export class TicketListComponent implements OnInit, OnDestroy {
   // Mobile-specific signals
   mobileSearchOpen = signal(false);
   mobileFilterOpen = signal(false);
+  filtersExpanded = signal(false);
 
   hasActiveFilters(): boolean {
-    return !!(this.statusFilter || this.tecnicoFilter || this.clienteFilter || this.empresaFilter || this.dniFilter || this.telefonoFilter || this.distritoFilter || this.codigoPostalFilter || this.fechaDesde || this.fechaHasta);
+    return !!(this.statusFilter || this.tecnicoFilter || this.clienteFilter || this.empresaFilter || this.dniFilter || this.telefonoFilter || this.distritoFilter || this.codigoPostalFilter || this.visitaFilter || this.trabajoFilter || this.fechaDesde || this.fechaHasta);
+  }
+
+  activeFilterCount(): number {
+    return [this.statusFilter, this.tecnicoFilter, this.clienteFilter, this.empresaFilter, this.dniFilter, this.telefonoFilter, this.distritoFilter, this.codigoPostalFilter, this.visitaFilter, this.trabajoFilter, this.fechaDesde, this.fechaHasta].filter(f => !!f).length;
   }
 
   setMobileStatusFilter(status: string) {
@@ -601,6 +666,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
       telefono: this.telefonoFilter,
       distrito: this.distritoFilter,
       codigoPostal: this.codigoPostalFilter,
+      visita: this.visitaFilter,
+      trabajo: this.trabajoFilter,
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       sortBy: this.sortColumn || undefined,
@@ -623,6 +690,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
       telefono: this.telefonoFilter,
       distrito: this.distritoFilter,
       codigoPostal: this.codigoPostalFilter,
+      visita: this.visitaFilter,
+      trabajo: this.trabajoFilter,
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       sortBy: this.sortColumn || undefined,
@@ -672,6 +741,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.telefonoFilter = '';
     this.distritoFilter = '';
     this.codigoPostalFilter = '';
+    this.visitaFilter = '';
+    this.trabajoFilter = '';
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.currentPage = 1;
@@ -728,6 +799,35 @@ export class TicketListComponent implements OnInit, OnDestroy {
       this.currentPage--;
       this.loadData();
     }
+  }
+
+  exportCSV() {
+    const tickets = this.ticketService.tickets();
+    if (!tickets.length) return;
+
+    const headers = ['Ticket', 'Cliente', 'Equipo', 'Estado', 'Técnico', 'Visita Realizada', 'Trabajo Realizado', 'Distrito', 'Cód. Postal', 'Fecha'];
+    const rows = tickets.map(t => [
+      t.Ticket || t.id || '',
+      (t.NombreCliente || '').replace(/[",]/g, ' '),
+      (t.DescripcionEquipo || t.IDEquipo || '').toString().replace(/[",]/g, ' '),
+      t.Estado || '',
+      ((t.NombreTecnico || '') + ' ' + (t.ApellidoTecnico || '')).trim().replace(/[",]/g, ' '),
+      t.VisitaRealizada ? 'Sí' : 'No',
+      t.TrabajoRealizado ? 'Sí' : 'No',
+      (t.Distrito || '').replace(/[",]/g, ' '),
+      t.CodigoPostal || '',
+      t.FechaVisita ? new Date(t.FechaVisita).toLocaleDateString('es-PE') : ''
+    ]);
+
+    const BOM = '\uFEFF';
+    const csv = BOM + [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tickets_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   openForm() {

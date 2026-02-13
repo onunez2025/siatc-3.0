@@ -809,6 +809,8 @@ app.get('/api/tickets', async (req, res) => {
         const company = req.query.company;
         const tecnicoSearch = req.query.tecnico;
         const telefonoSearch = req.query.telefono;
+        const visitaFilter = req.query.visita;
+        const trabajoFilter = req.query.trabajo;
         const fechaDesde = req.query.fechaDesde;
         const fechaHasta = req.query.fechaHasta;
         const sortBy = req.query.sortBy;
@@ -888,6 +890,14 @@ app.get('/api/tickets', async (req, res) => {
             baseQuery += ` AND T.FechaVisita <= @fechaHasta`;
         }
 
+        // Boolean filters for VisitaRealizada / TrabajoRealizado
+        if (visitaFilter === '1' || visitaFilter === '0') {
+            baseQuery += ` AND T.VisitaRealizada = @visitaFilter`;
+        }
+        if (trabajoFilter === '1' || trabajoFilter === '0') {
+            baseQuery += ` AND T.TrabajoRealizado = @trabajoFilter`;
+        }
+
         // Helper to populate request inputs
         const populateInputs = (req) => {
             if (status && status !== 'Todos') req.input('status', sql.NVarChar, status);
@@ -897,6 +907,8 @@ app.get('/api/tickets', async (req, res) => {
             if (telefonoSearch) req.input('telefonoSearch', sql.NVarChar, `%${telefonoSearch}%`);
             if (fechaDesde) req.input('fechaDesde', sql.DateTime, new Date(fechaDesde));
             if (fechaHasta) req.input('fechaHasta', sql.DateTime, new Date(fechaHasta + 'T23:59:59'));
+            if (visitaFilter === '1' || visitaFilter === '0') req.input('visitaFilter', sql.Bit, parseInt(visitaFilter));
+            if (trabajoFilter === '1' || trabajoFilter === '0') req.input('trabajoFilter', sql.Bit, parseInt(trabajoFilter));
             Object.keys(colFilters).forEach((col, index) => {
                 req.input(`col_${index}`, sql.NVarChar, `%${colFilters[col]}%`);
             });

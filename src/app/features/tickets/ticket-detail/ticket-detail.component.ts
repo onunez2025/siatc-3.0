@@ -129,7 +129,7 @@ import { Ticket } from '../../../core/services/ticket.service';
                 </div>
                 <div>
                   <span class="text-[10px] font-bold text-slate-400 uppercase">Tipo Servicio</span>
-                  <p class="text-sm text-slate-600 mt-0.5">{{ ticket.IdServicio }}</p>
+                  <p class="text-sm text-slate-600 mt-0.5">{{ ticket.TipoServicio || ticket.IdServicio }}</p>
                 </div>
                 <div>
                   <span class="text-[10px] font-bold text-slate-400 uppercase">Empresa</span>

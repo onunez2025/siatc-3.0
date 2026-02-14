@@ -49,6 +49,7 @@ export interface TicketSearchParams {
     fechaHasta?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
+    serviceType?: string;
 }
 
 @Injectable({
@@ -60,7 +61,7 @@ export class TicketService {
 
     // Search Subject for debouncing
     private searchSubject = new Subject<TicketSearchParams>();
-    
+
     // Cache for quick access
     private cache = new Map<string, { data: TicketResponse; timestamp: number }>();
     private cacheTimeout = 30000; // 30 seconds cache
@@ -81,7 +82,7 @@ export class TicketService {
         // Setup debounced search
         this.searchSubject.pipe(
             debounceTime(300), // Wait 300ms after user stops typing
-            distinctUntilChanged((prev, curr) => 
+            distinctUntilChanged((prev, curr) =>
                 JSON.stringify(prev) === JSON.stringify(curr)
             ),
             switchMap(params => this.fetchTickets(params))
@@ -102,7 +103,7 @@ export class TicketService {
         // Invalidate cache when filters change to avoid stale data
         const cacheKey = this.getCacheKey(params);
         const cached = this.cache.get(cacheKey);
-        
+
         if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
             this.ticketsSignal.set(cached.data.data);
             this.paginationSignal.set(cached.data.pagination);
@@ -120,6 +121,10 @@ export class TicketService {
                 this.loadingSignal.set(false);
             }
         });
+    }
+
+    getServiceTypes(): Observable<{ id: string, name: string }[]> {
+        return this.http.get<{ id: string, name: string }[]>(`${this.apiUrl}/service-types`);
     }
 
     private fetchTickets(params: TicketSearchParams): Observable<TicketResponse> {
@@ -142,6 +147,7 @@ export class TicketService {
         if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
         if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
         if (params.sortDir) httpParams = httpParams.set('sortDir', params.sortDir);
+        if (params.serviceType) httpParams = httpParams.set('serviceType', params.serviceType);
 
         console.log('Fetching tickets from:', `${this.apiUrl}/tickets`, 'with params:', params);
 
@@ -151,7 +157,7 @@ export class TicketService {
                     console.log('Tickets received:', res);
                     this.ticketsSignal.set(res.data);
                     this.paginationSignal.set(res.pagination);
-                    
+
                     // Update cache
                     const cacheKey = this.getCacheKey(params);
                     this.cache.set(cacheKey, { data: res, timestamp: Date.now() });
@@ -183,7 +189,8 @@ export class TicketService {
             fechaDesde: params.fechaDesde || '',
             fechaHasta: params.fechaHasta || '',
             sortBy: params.sortBy || '',
-            sortDir: params.sortDir || ''
+            sortDir: params.sortDir || '',
+            serviceType: params.serviceType || ''
         });
     }
 

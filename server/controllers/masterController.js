@@ -109,7 +109,7 @@ exports.getServices = async (req, res) => {
 exports.getServiceTypes = async (req, res) => {
     try {
         const pool = await getConnection();
-        const result = await pool.request().query('SELECT Id as id, Descripcion as name FROM [APPGAC].[ServicioTipo] ORDER BY Descripcion');
+        const result = await pool.request().query('SELECT Id as id, Descripcion as name FROM [SIATC].[ServicioTipo] ORDER BY Descripcion');
         res.json(result.recordset);
     } catch (err) {
         console.error(err);

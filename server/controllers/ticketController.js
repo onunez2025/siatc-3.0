@@ -17,8 +17,10 @@ exports.getTickets = async (req, res) => {
         const sortBy = req.query.sortBy;
         const sortDir = (req.query.sortDir || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
+        const serviceType = req.query.serviceType;
+
         // Whitelist of allowed sort columns
-        const allowedSortColumns = ['Ticket', 'NombreCliente', 'NombreEquipo', 'Estado', 'NombreTecnico', 'FechaVisita', 'IDEmpresa', 'Distrito', 'IdServicio'];
+        const allowedSortColumns = ['Ticket', 'NombreCliente', 'NombreEquipo', 'Estado', 'NombreTecnico', 'FechaVisita', 'IDEmpresa', 'Distrito', 'IdServicio', 'TipoServicio'];
         const safeSortColumn = allowedSortColumns.includes(sortBy) ? sortBy : 'FechaVisita';
         const safeSortDir = sortDir === 'ASC' ? 'ASC' : 'DESC';
 
@@ -40,6 +42,7 @@ exports.getTickets = async (req, res) => {
         let baseQuery = `
             FROM [SIATC].[Tickets] T
             LEFT JOIN [dbo].[GAC_APP_TB_CANCELACIONES] C ON T.Ticket = C.Ticket
+            LEFT JOIN [SIATC].[ServicioTipo] ST ON T.IdServicio = ST.Id
             WHERE 1=1
         `;
 
@@ -57,12 +60,14 @@ exports.getTickets = async (req, res) => {
         // WHERE clauses
         if (status && status !== 'Todos') baseQuery += ` AND T.Estado = @status`;
         if (company && company !== 'undefined') baseQuery += ` AND T.IDEmpresa = @company`;
+        if (serviceType && serviceType !== 'Todos') baseQuery += ` AND T.IdServicio = @serviceType`;
         if (search) {
             baseQuery += ` AND (
                 T.Ticket LIKE @search OR T.NombreCliente LIKE @search OR T.NombreEquipo LIKE @search
                 OR T.NombreTecnico LIKE @search OR T.ApellidoTecnico LIKE @search OR T.CodigoExternoCliente LIKE @search
                 OR T.Telefono1 LIKE @search OR T.Celular1 LIKE @search OR T.Celular2 LIKE @search
                 OR T.Distrito LIKE @search OR T.CodigoPostal LIKE @search OR T.Email LIKE @search
+                OR ST.Descripcion LIKE @search
             )`;
         }
         Object.keys(colFilters).forEach((col, index) => {
@@ -79,6 +84,7 @@ exports.getTickets = async (req, res) => {
         const populateInputs = (sqlReq) => {
             if (status && status !== 'Todos') sqlReq.input('status', sql.NVarChar, status);
             if (company && company !== 'undefined') sqlReq.input('company', sql.VarChar, company);
+            if (serviceType && serviceType !== 'Todos') sqlReq.input('serviceType', sql.NVarChar, serviceType);
             if (search) sqlReq.input('search', sql.NVarChar, `%${search}%`);
             if (tecnicoSearch) sqlReq.input('tecnicoSearch', sql.NVarChar, `%${tecnicoSearch}%`);
             if (telefonoSearch) sqlReq.input('telefonoSearch', sql.NVarChar, `%${telefonoSearch}%`);
@@ -117,9 +123,10 @@ exports.getTickets = async (req, res) => {
                 T.ComentarioProgramador, T.IDEmpresa, T.CodigoTecnico, T.NombreTecnico, T.ApellidoTecnico,
                 T.VisitaRealizada, T.TrabajoRealizado, T.SolicitaNuevaVisita, T.MotivoNuevaVisita,
                 T.CodMotivoIncidente, T.FechaModificacionIT, T.ComentarioTecnico, T.LastSync,
-                C.Motivo_Cancelacion, C.Autorizador_Cancelacion, C.Generado_el as FechaCancelacion
+                C.Motivo_Cancelacion, C.Autorizador_Cancelacion, C.Generado_el as FechaCancelacion,
+                ST.Descripcion as TipoServicio
             ${baseQuery}
-            ORDER BY T.${safeSortColumn} ${safeSortDir}
+            ORDER BY ${safeSortColumn === 'TipoServicio' ? 'ST.Descripcion' : 'T.' + safeSortColumn} ${safeSortDir}
             OFFSET ${validOffset} ROWS FETCH NEXT ${limit} ROWS ONLY
         `);
 
@@ -127,12 +134,21 @@ exports.getTickets = async (req, res) => {
         const tickets = result.recordset.map(t => ({
             ...t,
             id: t.Ticket,
-            subject: `${t.IdServicio || 'Servicio'} - ${t.NombreEquipo || 'General'}`,
+            subject: `${t.TipoServicio || t.IdServicio || 'Servicio'} - ${t.NombreEquipo || 'General'}`,
             date: t.FechaVisita || new Date().toISOString(),
             VisitaRealizada: !!t.VisitaRealizada,
             TrabajoRealizado: !!t.TrabajoRealizado,
-            SolicitaNuevaVisita: !!t.SolicitaNuevaVisita
+            SolicitaNuevaVisita: !!t.SolicitaNuevaVisita,
+            TipoServicio: t.TipoServicio
         }));
+
+        // if (tickets.length > 0) {
+        //     console.log('[DEBUG] First ticket sample:', {
+        //         id: tickets[0].Ticket,
+        //         IdServicio: tickets[0].IdServicio,
+        //         TipoServicio: tickets[0].TipoServicio
+        //     });
+        // }
 
         res.json({
             data: tickets,

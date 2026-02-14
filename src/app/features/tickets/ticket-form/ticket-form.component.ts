@@ -1,13 +1,13 @@
-﻿import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Ticket } from '../../../core/services/ticket.service';
+import { Ticket, TicketService } from '../../../core/services/ticket.service';
 
 @Component({
-   selector: 'app-ticket-form',
-   standalone: true,
-   imports: [CommonModule, FormsModule],
-   template: `
+  selector: 'app-ticket-form',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
     <div class="flex flex-col h-full">
       <!-- Scrollable Content -->
       <div class="flex-1 overflow-y-auto">
@@ -69,9 +69,16 @@ import { Ticket } from '../../../core/services/ticket.service';
               </div>
               <div class="sm:col-span-2">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo Servicio</label>
-                <input [(ngModel)]="formData.IdServicio"
-                  class="mt-1 w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
-                  placeholder="ID del tipo de servicio">
+                <div class="relative mt-1">
+                  <select [(ngModel)]="formData.IdServicio"
+                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-800 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all appearance-none pr-8 text-slate-800">
+                    <option [ngValue]="null" disabled>Seleccione un tipo...</option>
+                    @for (type of serviceTypes(); track type.id) {
+                      <option [value]="type.id">{{ type.name }}</option>
+                    }
+                  </select>
+                  <span class="material-icons absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base">expand_more</span>
+                </div>
               </div>
             </div>
           </section>
@@ -345,36 +352,42 @@ import { Ticket } from '../../../core/services/ticket.service';
     </div>
   `
 })
-export class TicketFormComponent implements OnChanges {
-   @Input() ticket: Ticket | null = null;
-   @Output() close = new EventEmitter<void>();
-   @Output() save = new EventEmitter<any>();
+export class TicketFormComponent implements OnChanges, OnInit {
+  private ticketService = inject(TicketService);
+  serviceTypes = signal<{ id: string, name: string }[]>([]);
+  @Input() ticket: Ticket | null = null;
+  @Output() close = new EventEmitter<void>();
+  @Output() save = new EventEmitter<any>();
 
-   formData: any = {};
+  formData: any = {};
 
-   ngOnChanges(changes: SimpleChanges) {
-      if (changes['ticket'] && this.ticket) {
-         this.formData = { ...this.ticket };
-         // Ensure date format for input datetime-local
-         if (this.formData.FechaVisita) {
-            const date = new Date(this.formData.FechaVisita);
-            this.formData.FechaVisita = date.toISOString().slice(0, 16);
-         }
-         if (this.formData.FechaCancelacion) {
-            const date = new Date(this.formData.FechaCancelacion);
-            this.formData.FechaCancelacion = date.toISOString().slice(0, 16);
-         }
-      } else {
-         this.formData = {
-            Estado: 'Ready to plan',
-            VisitaRealizada: false,
-            TrabajoRealizado: false,
-            SolicitaNuevaVisita: false
-         };
+  ngOnInit() {
+    this.ticketService.getServiceTypes().subscribe(types => this.serviceTypes.set(types));
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['ticket'] && this.ticket) {
+      this.formData = { ...this.ticket };
+      // Ensure date format for input datetime-local
+      if (this.formData.FechaVisita) {
+        const date = new Date(this.formData.FechaVisita);
+        this.formData.FechaVisita = date.toISOString().slice(0, 16);
       }
-   }
+      if (this.formData.FechaCancelacion) {
+        const date = new Date(this.formData.FechaCancelacion);
+        this.formData.FechaCancelacion = date.toISOString().slice(0, 16);
+      }
+    } else {
+      this.formData = {
+        Estado: 'Ready to plan',
+        VisitaRealizada: false,
+        TrabajoRealizado: false,
+        SolicitaNuevaVisita: false
+      };
+    }
+  }
 
-   onSubmit() {
-      this.save.emit(this.formData);
-   }
+  onSubmit() {
+    this.save.emit(this.formData);
+  }
 }

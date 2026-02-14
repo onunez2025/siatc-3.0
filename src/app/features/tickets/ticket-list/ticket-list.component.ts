@@ -76,6 +76,13 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                 <option value="Closed">Closed</option>
                 <option value="Cancelled">Cancelled</option>
               </select>
+              <select [(ngModel)]="serviceTypeFilter" (change)="onFilterChange()"
+                class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 min-w-[140px] text-slate-700 font-medium">
+                <option value="">Tipo: Todos</option>
+                @for (type of serviceTypes(); track type.id) {
+                  <option [value]="type.id">{{ type.name }}</option>
+                }
+              </select>
               <input [(ngModel)]="tecnicoFilter" (ngModelChange)="onTextFilterChange()" placeholder="Técnico..."
                 class="text-xs bg-white border border-slate-300 rounded focus:ring-2 focus:ring-primary focus:border-primary py-1.5 px-2 w-[130px] text-slate-700 font-medium" />
               <input [(ngModel)]="clienteFilter" (ngModelChange)="onTextFilterChange()" placeholder="Cliente..."
@@ -140,7 +147,7 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                       <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-10 text-center">
                         <input class="rounded-sm border-slate-300 text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox" />
                       </th>
-                      <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-28 cursor-pointer hover:bg-slate-100 select-none" (click)="sortBy('Ticket')">
+                      <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-20 cursor-pointer hover:bg-slate-100 select-none" (click)="sortBy('Ticket')">
                         <span class="inline-flex items-center gap-1">Ticket
                         @if (sortColumn === 'Ticket') { <span class="material-icons text-xs">{{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span> }
                         @else { <span class="material-icons text-xs text-slate-300">unfold_more</span> }
@@ -155,6 +162,12 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                       <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 select-none" (click)="sortBy('NombreEquipo')">
                         <span class="inline-flex items-center gap-1">Equipo
                         @if (sortColumn === 'NombreEquipo') { <span class="material-icons text-xs">{{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span> }
+                        @else { <span class="material-icons text-xs text-slate-300">unfold_more</span> }
+                        </span>
+                      </th>
+                      <th class="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 select-none" (click)="sortBy('TipoServicio')">
+                        <span class="inline-flex items-center gap-1">Tipo Servicio
+                        @if (sortColumn === 'TipoServicio') { <span class="material-icons text-xs">{{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span> }
                         @else { <span class="material-icons text-xs text-slate-300">unfold_more</span> }
                         </span>
                       </th>
@@ -197,6 +210,9 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                         </td>
                         <td class="px-4 py-2.5">
                           <p class="text-xs text-slate-600 line-clamp-1" [title]="ticket.NombreEquipo">{{ ticket.NombreEquipo }}</p>
+                        </td>
+                        <td class="px-4 py-2.5">
+                          <span class="text-xs text-slate-600 font-medium whitespace-nowrap">{{ ticket.TipoServicio || ticket.IdServicio }}</span>
                         </td>
                         <td class="px-4 py-2.5 text-center">
                           <span class="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-tight" [ngClass]="getStatusClass(ticket.Estado)">
@@ -435,6 +451,17 @@ import { DrawerComponent } from '../../../shared/components/drawer/drawer.compon
                 </div>
 
                 <div>
+                  <label class="block text-sm font-semibold mb-2 text-slate-700">Tipo de Servicio</label>
+                  <select [(ngModel)]="serviceTypeFilter"
+                    class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                    <option value="">Todos los Tipos</option>
+                    @for (type of serviceTypes(); track type.id) {
+                      <option [value]="type.id">{{ type.name }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
                   <label class="block text-sm font-semibold mb-2 text-slate-700">Técnico</label>
                   <input [(ngModel)]="tecnicoFilter" placeholder="Nombre del técnico..."
                     class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary" />
@@ -575,10 +602,13 @@ export class TicketListComponent implements OnInit, OnDestroy {
   fechaHasta = '';
   currentPage = 1;
   pageSize = 20;
-  
+
   // Sorting
   sortColumn = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+
+  serviceTypes = signal<{ id: string, name: string }[]>([]);
+  serviceTypeFilter = '';
 
   isFormOpen = signal(false);
   selectedTicket = signal<Ticket | null>(null);
@@ -590,11 +620,11 @@ export class TicketListComponent implements OnInit, OnDestroy {
   filtersExpanded = signal(false);
 
   hasActiveFilters(): boolean {
-    return !!(this.statusFilter || this.tecnicoFilter || this.clienteFilter || this.empresaFilter || this.dniFilter || this.telefonoFilter || this.distritoFilter || this.codigoPostalFilter || this.visitaFilter || this.trabajoFilter || this.fechaDesde || this.fechaHasta);
+    return !!(this.statusFilter || this.tecnicoFilter || this.clienteFilter || this.empresaFilter || this.dniFilter || this.telefonoFilter || this.distritoFilter || this.codigoPostalFilter || this.visitaFilter || this.trabajoFilter || this.fechaDesde || this.fechaHasta || this.serviceTypeFilter);
   }
 
   activeFilterCount(): number {
-    return [this.statusFilter, this.tecnicoFilter, this.clienteFilter, this.empresaFilter, this.dniFilter, this.telefonoFilter, this.distritoFilter, this.codigoPostalFilter, this.visitaFilter, this.trabajoFilter, this.fechaDesde, this.fechaHasta].filter(f => !!f).length;
+    return [this.statusFilter, this.tecnicoFilter, this.clienteFilter, this.empresaFilter, this.dniFilter, this.telefonoFilter, this.distritoFilter, this.codigoPostalFilter, this.visitaFilter, this.trabajoFilter, this.fechaDesde, this.fechaHasta, this.serviceTypeFilter].filter(f => !!f).length;
   }
 
   setMobileStatusFilter(status: string) {
@@ -645,6 +675,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadData();
+    this.ticketService.getServiceTypes().subscribe(types => this.serviceTypes.set(types));
     // Mark as initialized after first load to prevent spurious filter events
     setTimeout(() => this.initialized = true, 100);
   }
@@ -671,7 +702,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       sortBy: this.sortColumn || undefined,
-      sortDir: this.sortColumn ? this.sortDirection : undefined
+      sortDir: this.sortColumn ? this.sortDirection : undefined,
+      serviceType: this.serviceTypeFilter
     });
   }
 
@@ -695,7 +727,8 @@ export class TicketListComponent implements OnInit, OnDestroy {
       fechaDesde: this.fechaDesde,
       fechaHasta: this.fechaHasta,
       sortBy: this.sortColumn || undefined,
-      sortDir: this.sortColumn ? this.sortDirection : undefined
+      sortDir: this.sortColumn ? this.sortDirection : undefined,
+      serviceType: this.serviceTypeFilter
     });
   }
 
@@ -745,6 +778,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
     this.trabajoFilter = '';
     this.fechaDesde = '';
     this.fechaHasta = '';
+    this.serviceTypeFilter = '';
     this.currentPage = 1;
     this.sortColumn = '';
     this.sortDirection = 'asc';
@@ -766,7 +800,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
     const totalPages = this.ticketService.pagination().totalPages;
     const current = this.currentPage;
     const pages: (number | string)[] = [];
-    
+
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -778,7 +812,7 @@ export class TicketListComponent implements OnInit, OnDestroy {
         pages.push(1, '...', current - 1, current, current + 1, '...', totalPages);
       }
     }
-    
+
     return pages;
   }
 

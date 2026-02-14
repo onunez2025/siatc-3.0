@@ -126,4 +126,16 @@ exports.getCancellationReasons = async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Error fetching cancellation reasons' });
     }
+}
+};
+
+exports.syncServices = async (req, res) => {
+    try {
+        const syncServiceTypes = require('../scripts/sync_service_types');
+        await syncServiceTypes();
+        res.json({ success: true, message: 'Service types synchronization triggered.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error syncing service types' });
+    }
 };

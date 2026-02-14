@@ -55,8 +55,16 @@ app.listen(port, () => {
 
     // Start Background Sync Service
     try {
-        startSyncService();
+        // startSyncService(); // Disabled for debugging login 500
     } catch (err) {
         console.error('Failed to start sync service:', err);
     }
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('UNHANDLED REJECTION:', reason);
 });

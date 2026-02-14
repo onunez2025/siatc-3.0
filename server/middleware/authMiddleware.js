@@ -6,8 +6,10 @@ module.exports = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
 
     if (!token) {
+        console.log('AuthMiddleware: No token provided');
         return res.status(401).json({ error: 'Acceso denegado. Token no proporcionado.' });
     }
+    console.log('AuthMiddleware: Token found, verifying...');
 
     // 2. Verify token
     try {

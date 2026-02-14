@@ -19,47 +19,94 @@ exports.getStats = async (req, res) => {
     }
 };
 
-exports.getDashboardData = async (req, res) => {
+exports.getDashboard = async (req, res) => {
     try {
         const pool = await getConnection();
-        const companyId = req.query.companyId;
-
-        let companyFilter = '';
-        if (companyId) {
-            companyFilter = 'AND T.IDEmpresa = @companyId';
-        }
-
         const request = pool.request();
-        if (companyId) request.input('companyId', sql.Int, parseInt(companyId));
 
-        const [counts, daily] = await Promise.all([
+        // Parallel queries for performance
+        const [todayStats, weekStats, statusDist, trend, topEmpresas, users, companies] = await Promise.all([
+            // 1. Tickets Today
             request.query(`
                 SELECT 
                     COUNT(*) as total,
-                    SUM(CASE WHEN T.Estado = 'Abierto' THEN 1 ELSE 0 END) as abiertos,
-                    SUM(CASE WHEN T.Estado = 'En Proceso' THEN 1 ELSE 0 END) as enProceso,
-                    SUM(CASE WHEN T.Estado = 'Cerrado' THEN 1 ELSE 0 END) as cerrados,
-                    SUM(CASE WHEN T.Estado = 'Cancelado' THEN 1 ELSE 0 END) as cancelados
-                FROM [SIATC].[Tickets] T
-                WHERE 1=1 ${companyFilter}
+                    SUM(CASE WHEN Estado = 'Ready to plan' THEN 1 ELSE 0 END) as readyToPlan,
+                    SUM(CASE WHEN Estado = 'Released' THEN 1 ELSE 0 END) as released,
+                    SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed,
+                    SUM(CASE WHEN Estado = 'Cancelled' THEN 1 ELSE 0 END) as cancelled
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) = CAST(GETDATE() AS DATE)
             `),
+            // 2. Tickets Week
             request.query(`
                 SELECT 
-                    FORMAT(T.FechaVisita, 'yyyy-MM-dd') as date,
-                    COUNT(*) as count
-                FROM [SIATC].[Tickets] T
-                WHERE T.FechaVisita >= DATEADD(day, -30, GETDATE()) ${companyFilter}
-                GROUP BY FORMAT(T.FechaVisita, 'yyyy-MM-dd')
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed,
+                    SUM(CASE WHEN Estado = 'Cancelled' THEN 1 ELSE 0 END) as cancelled
+                FROM [SIATC].[Tickets]
+                WHERE FechaVisita >= DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 0)
+            `),
+            // 3. Status Distribution (Today)
+            request.query(`
+                SELECT Estado as status, COUNT(*) as count
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) = CAST(GETDATE() AS DATE)
+                GROUP BY Estado
+            `),
+            // 4. Trend (Last 7 Days)
+            request.query(`
+                SELECT 
+                    FORMAT(FechaVisita, 'yyyy-MM-dd') as date,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed
+                FROM [SIATC].[Tickets]
+                WHERE FechaVisita >= DATEADD(day, -7, GETDATE())
+                GROUP BY FORMAT(FechaVisita, 'yyyy-MM-dd')
                 ORDER BY date
+            `),
+            // 5. Top Empresas (Today)
+            request.query(`
+                SELECT TOP 5 NombreCliente as empresa, COUNT(*) as count
+                FROM [SIATC].[Tickets]
+                WHERE CAST(FechaVisita AS DATE) = CAST(GETDATE() AS DATE)
+                GROUP BY NombreCliente
+                ORDER BY count DESC
+            `),
+            // 6. Users Stats
+            request.query(`
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Activo = 1 THEN 1 ELSE 0 END) as active,
+                    COUNT(DISTINCT IdRol) as rolesUsed
+                FROM [SIATC].[Usuarios]
+            `),
+            // 7. Companies Stats
+            request.query(`
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN Activo = 1 THEN 1 ELSE 0 END) as active
+                FROM [SIATC].[Empresas]
             `)
         ]);
 
-        res.json({
-            stats: counts.recordset[0],
-            dailyStats: daily.recordset
-        });
+        const data = {
+            date: new Date().toISOString().split('T')[0],
+            ticketsToday: todayStats.recordset[0],
+            ticketsWeek: weekStats.recordset[0],
+            statusDistribution: statusDist.recordset,
+            topEmpresas: topEmpresas.recordset,
+            users: users.recordset[0] || { total: 0, active: 0, rolesUsed: 0 },
+            empresas: {
+                ...companies.recordset[0],
+                propias: 0, // Placeholder
+                cas: 0      // Placeholder
+            },
+            trend: trend.recordset
+        };
+
+        res.json(data);
     } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        res.status(500).json({ error: 'Error fetching dashboard data' });
+        console.error('Error in getDashboard:', err);
+        res.status(500).json({ error: 'Error processing dashboard data' });
     }
 };

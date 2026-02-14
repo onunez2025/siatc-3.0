@@ -43,6 +43,17 @@ exports.getTickets = async (req, res) => {
             WHERE 1=1
         `;
 
+        // [SECURITY] Technician View Restriction
+        // Agnostic of UI filters, if the user is a technician, they ONLY see their tickets.
+        if (req.user && req.user.roleName === 'TECNICO') {
+            if (req.user.codigoTecnico) {
+                baseQuery += ` AND T.CodigoTecnico = @security_codTecnico`;
+            } else {
+                // Technician without code should see nothing
+                baseQuery += ` AND 1=0`;
+            }
+        }
+
         // WHERE clauses
         if (status && status !== 'Todos') baseQuery += ` AND T.Estado = @status`;
         if (company && company !== 'undefined') baseQuery += ` AND T.IDEmpresa = @company`;
@@ -65,19 +76,24 @@ exports.getTickets = async (req, res) => {
         if (trabajoFilter === '1' || trabajoFilter === '0') baseQuery += ` AND T.TrabajoRealizado = @trabajoFilter`;
 
         // Helper to populate inputs
-        const populateInputs = (req) => {
-            if (status && status !== 'Todos') req.input('status', sql.NVarChar, status);
-            if (company && company !== 'undefined') req.input('company', sql.VarChar, company);
-            if (search) req.input('search', sql.NVarChar, `%${search}%`);
-            if (tecnicoSearch) req.input('tecnicoSearch', sql.NVarChar, `%${tecnicoSearch}%`);
-            if (telefonoSearch) req.input('telefonoSearch', sql.NVarChar, `%${telefonoSearch}%`);
-            if (fechaDesde) req.input('fechaDesde', sql.DateTime, new Date(fechaDesde));
-            if (fechaHasta) req.input('fechaHasta', sql.DateTime, new Date(fechaHasta + 'T23:59:59'));
-            if (visitaFilter === '1' || visitaFilter === '0') req.input('visitaFilter', sql.Bit, parseInt(visitaFilter));
-            if (trabajoFilter === '1' || trabajoFilter === '0') req.input('trabajoFilter', sql.Bit, parseInt(trabajoFilter));
+        const populateInputs = (sqlReq) => {
+            if (status && status !== 'Todos') sqlReq.input('status', sql.NVarChar, status);
+            if (company && company !== 'undefined') sqlReq.input('company', sql.VarChar, company);
+            if (search) sqlReq.input('search', sql.NVarChar, `%${search}%`);
+            if (tecnicoSearch) sqlReq.input('tecnicoSearch', sql.NVarChar, `%${tecnicoSearch}%`);
+            if (telefonoSearch) sqlReq.input('telefonoSearch', sql.NVarChar, `%${telefonoSearch}%`);
+            if (fechaDesde) sqlReq.input('fechaDesde', sql.DateTime, new Date(fechaDesde));
+            if (fechaHasta) sqlReq.input('fechaHasta', sql.DateTime, new Date(fechaHasta + 'T23:59:59'));
+            if (visitaFilter === '1' || visitaFilter === '0') sqlReq.input('visitaFilter', sql.Bit, parseInt(visitaFilter));
+            if (trabajoFilter === '1' || trabajoFilter === '0') sqlReq.input('trabajoFilter', sql.Bit, parseInt(trabajoFilter));
             Object.keys(colFilters).forEach((col, index) => {
-                req.input(`col_${index}`, sql.NVarChar, `%${colFilters[col]}%`);
+                sqlReq.input(`col_${index}`, sql.NVarChar, `%${colFilters[col]}%`);
             });
+            // [SECURITY] Input binding for technician
+            // Uses Express 'req' from parent scope for user info, and 'sqlReq' for binding
+            if (req.user && req.user.roleName === 'TECNICO' && req.user.codigoTecnico) {
+                sqlReq.input('security_codTecnico', sql.NVarChar, req.user.codigoTecnico);
+            }
         };
 
         // 1. Get Total Count
@@ -130,6 +146,27 @@ exports.getTickets = async (req, res) => {
     } catch (err) {
         console.error('CRITICAL ERROR IN /api/tickets:', err);
         res.status(500).json({ error: 'Error fetching tickets', details: err.message });
+    }
+};
+
+exports.getStats = async (req, res) => {
+    try {
+        const pool = await getConnection();
+        // Use the same table as getTickets: [SIATC].[Tickets]
+        const result = await pool.request().query(`
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN Estado = 'Ready to plan' THEN 1 ELSE 0 END) as readyToPlan,
+                SUM(CASE WHEN Estado = 'Released' THEN 1 ELSE 0 END) as released,
+                SUM(CASE WHEN Estado = 'Closed' THEN 1 ELSE 0 END) as closed,
+                SUM(CASE WHEN Estado = 'Cancelled' THEN 1 ELSE 0 END) as cancelled
+            FROM [SIATC].[Tickets]
+        `);
+
+        res.json(result.recordset[0]);
+    } catch (err) {
+        console.error('Error fetching ticket stats:', err);
+        res.status(500).json({ error: 'Error fetching ticket stats' });
     }
 };
 

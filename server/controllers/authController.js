@@ -59,7 +59,13 @@ exports.login = async (req, res) => {
         const roleName = (user.NombreRol || 'INVITADO').toUpperCase();
 
         const token = jwt.sign(
-            { id: user.IdUsuario, username: user.Username, roleId: user.IdRol, roleName },
+            {
+                id: user.IdUsuario,
+                username: user.Username,
+                roleId: user.IdRol,
+                roleName,
+                codigoTecnico: user.CodigoTecnico // Added for Technician View Restriction
+            },
             process.env.JWT_SECRET || 'secret_key_123',
             { expiresIn: '24h' }
         );

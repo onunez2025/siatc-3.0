@@ -1,12 +1,9 @@
 const sql = require('mssql');
 require('dotenv').config();
 
-// Contraseña con caracteres especiales - hardcodeada para evitar problemas con env vars
-const DB_PASSWORD = '@s0le@dm1nAI#82,';
-
 const config = {
     user: process.env.DB_USER || 'soledbserveradmin',
-    password: DB_PASSWORD,
+    password: process.env.DB_PASSWORD,
     server: process.env.DB_SERVER || 'soledbserver.database.windows.net',
     database: process.env.DB_NAME || 'soledb-puntoventa',
     options: {
